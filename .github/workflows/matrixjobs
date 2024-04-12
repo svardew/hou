@@ -1,0 +1,26 @@
+name: pass output from matrix job to next job
+on:
+  workflow_dispatch:
+jobs:
+  jobmatrix:
+    runs-on: ubuntu-latest
+    starategy:
+      matrix:
+        - {name: apple, price: 32 }
+        - {name: banana, price: 9 }
+    outputs:
+      box: ${{ steps.cart.outputs.RECIET }}
+    steps:
+      - name: ${{ matrix.name }}
+        run: echo ${{ matrix.name }} x ${{ matrix.price }}
+      - name: cart
+        id: cart
+        run: |
+          echo "RECIET=${{ matrix.name }}_is_${{ matrix.price }}" >> $GITHUB_OUTPUT
+  jobsingle:
+    runs-on: ubuntu-latest
+    needs: [jobmatrix]
+    steps:
+      - name: say
+        run: echo 9
+        
