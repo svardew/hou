@@ -4,10 +4,11 @@ on:
 jobs:
   jobmatrix:
     runs-on: ubuntu-latest
-    starategy:
+    strategy:
       matrix:
-        - {name: apple, price: 32 }
-        - {name: banana, price: 9 }
+        include:
+          - {name: apple, price: 32 }
+          - {name: banana, price: 9 }
     outputs:
       box: ${{ steps.cart.outputs.RECIET }}
     steps:
