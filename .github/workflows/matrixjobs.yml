@@ -24,4 +24,8 @@ jobs:
     steps:
       - name: say
         run: echo 9
+      - name: previous job output
+        run: |
+          echo ${{ needs.jobmatrix.outputs.RECIET }}
+          
         
