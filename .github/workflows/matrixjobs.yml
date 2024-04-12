@@ -10,7 +10,7 @@ jobs:
           - {name: apple, price: 32 }
           - {name: banana, price: 9 }
     outputs:
-      box: ${{ steps.cart.outputs.RECIET }}
+      my-${{ matrix.name }}-box: ${{ steps.cart.outputs.RECIET }}
     steps:
       - name: ${{ matrix.name }}
         run: echo ${{ matrix.name }} x ${{ matrix.price }}
@@ -26,6 +26,6 @@ jobs:
         run: echo 9
       - name: previous job output
         run: |
-          echo ${{ needs.jobmatrix.outputs.box }}
+          echo ${{ needs.jobmatrix.outputs.my-apple-box }}
           
         
