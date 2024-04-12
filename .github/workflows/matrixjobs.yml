@@ -26,6 +26,6 @@ jobs:
         run: echo 9
       - name: previous job output
         run: |
-          echo ${{ needs.jobmatrix.outputs.RECIET }}
+          echo ${{ needs.jobmatrix.outputs.box }}
           
         
