@@ -127,6 +127,9 @@ jobs:
 
       - name: Checkout repository from github
         uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/vim
+          ref: 3cf121ed31f7a022e2ae6585391434d9c88e9792 #9.1.0233
 
       - name: Create a list of download URLs
         shell: cmd
@@ -311,7 +314,7 @@ jobs:
           )
 
       - name: Generate gcov files
-        if: matrix.coverage
+        if: matrix.coverage && false
         shell: msys2 {0}
         run: |
           cd src
@@ -319,7 +322,7 @@ jobs:
 
       - name: Codecov
         timeout-minutes: 20
-        if: matrix.coverage
+        if: matrix.coverage && false
         uses: codecov/codecov-action@v4
         with:
           directory: src
