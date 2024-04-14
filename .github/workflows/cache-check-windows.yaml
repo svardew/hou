@@ -24,13 +24,8 @@ jobs:
     env:
       thisworkflowname: Cache check windows
       usage: caller_workflow.jobs.xxx.uses ./.github/workflow/called_workflow.yml
-      xmatrix:
-        x86:
-          arch: x86
-          BITS: 32
-        x64:
-          arch: x64
-          BITS: 64
+
+
       # Lua
       LUA_VER: 54
       LUA_VER_DOT: '5.4'
@@ -46,7 +41,6 @@ jobs:
       SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
       SODIUM_MINGW_VER: 26
 
-
     steps:
       - name: Initialize
         id: init
@@ -54,6 +48,11 @@ jobs:
         run: |
           cmd /c ver
           git config --global core.autocrlf input
+          # xmatrix:
+          echo "x86arch=x86" >> $GITHUB_OUTPUT
+          echo "x86bits=32" >> $GITHUB_OUTPUT
+          echo "x86arch=x64" >> $GITHUB_OUTPUT
+          echo "x86bits=64" >> $GITHUB_OUTPUT
       - name: Key file (list of download URLs)
         shell: cmd
         run: |
@@ -61,24 +60,24 @@ jobs:
           echo %LUA_RELEASE%>> urls.txt
           echo %WINPTY_URL%>> urls.txt
           echo %SODIUM_VER%>> urls.txt
-      - name: Restore Cache ${{ env.xmatrix.x86.arch }}
+      - name: Restore Cache x86
         uses: actions/cache/restore@v4
         with:
           path: downloads
-          key: ${{ runner.os }}-${{ env.xmatrix.x86.arch }}-runid_${{ inputs.runid }}
+          key: ${{ runner.os }}-${{ steps.init.x86arch }}-runid_${{ inputs.runid }}
           restore-keys: |
-            ${{ runner.os }}-${{ env.xmatrix.x86.arch }}-${{ hashFiles('urls.txt') }}
-            ${{ runner.os }}-${{ env.xmatrix.x86.arch }}-runid_
-      - name: Rename cachedir ${{ env.xmatrix.x86.arch }}
+            ${{ runner.os }}-${{ steps.init.x86arch }}-${{ hashFiles('urls.txt') }}
+            ${{ runner.os }}-${{ steps.init.x86arch }}-runid_
+      - name: Rename cachedir ${{ steps.init.x86arch }}
         shell: bash
         run: |
-          test -d downloads && mv downloads cache_${{ env.xmatrix.x86.arch }}
-          test -d downloads || mkdir cache_${{ env.xmatrix.x86.arch }}
-          ls -lagG ${{ env.xmatrix.x86.arch }}
-      - name: Verify cache ${{ env.xmatrix.x86.arch }}
+          test -d downloads && mv downloads cache_${{ steps.init.x86arch }}
+          test -d downloads || mkdir cache_${{ steps.init.x86arch }}
+          ls -lagG ${{ steps.init.x86arch }}
+      - name: Verify cache ${{ steps.init.x86arch }}
         shell: bash
         run: |
-          cd cache_${{ env.xmatrix.x86.arch }}
+          cd cache_${{ steps.init.x86arch }}
           touch MD5SUMS
           cat <<EOM > MD5SUMS
           x86::8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
@@ -90,7 +89,6 @@ jobs:
           x64::132834e89206d893630410fa2192bd2a  lua.zip
           x64::a0f941c53b8e509712eeca46104674c4  winpty.zip
           EOM
-          echo ${{ env.MD5SUMS.x86 }} > MD5SUMS
           md5sum -c MD5SUMS
 
 
