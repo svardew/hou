@@ -81,11 +81,14 @@ jobs:
             if [ -f downloads/$2 ];then
               echo Skip Downlaod. $2
             else
-              wget -nv --tries=2 --retry-wait=10 -O $2 $1
+              wget -nv --tries=2 --waitretry=10 -O $2 $1
             fi
           }
           test -d downloads || mkdir downloads
-          dlfile2 ${{ env.LUA32_URL }} downloads/lua.zip
+          url=${{ env.LUA32_URL }}
+          sub=${{ env.LUA_RELEASE }}
+          url=${url/\%LUA_RELEASE\%/$sub}
+          dlfile2 $url downloads/lua.zip
           ls -lahgG downloads
 
       - name: Rename cachedir ${{ env.arch }}
