@@ -64,20 +64,20 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: downloads
-          key: ${{ runner.os }}-${{ steps.init.x86arch }}-runid_${{ inputs.runid }}
+          key: ${{ runner.os }}-${{ steps.init.outputs.x86arch }}-runid_${{ inputs.runid }}
           restore-keys: |
-            ${{ runner.os }}-${{ steps.init.x86arch }}-${{ hashFiles('urls.txt') }}
-            ${{ runner.os }}-${{ steps.init.x86arch }}-runid_
-      - name: Rename cachedir ${{ steps.init.x86arch }}
+            ${{ runner.os }}-${{ steps.init.outputs.x86arch }}-${{ hashFiles('urls.txt') }}
+            ${{ runner.os }}-${{ steps.init.outputs.x86arch }}-runid_
+      - name: Rename cachedir ${{ steps.init.outputs.x86arch }}
         shell: bash
         run: |
-          test -d downloads && mv downloads cache_${{ steps.init.x86arch }}
-          test -d downloads || mkdir cache_${{ steps.init.x86arch }}
-          ls -lagG ${{ steps.init.x86arch }}
-      - name: Verify cache ${{ steps.init.x86arch }}
+          test -d downloads && mv downloads cache_${{ steps.init.outputs.x86arch }}
+          test -d downloads || mkdir cache_${{ steps.init.outputs.x86arch }}
+          ls -lagG ${{ steps.init.outputs.x86arch }}
+      - name: Verify cache ${{ steps.init.outputs.x86arch }}
         shell: bash
         run: |
-          cd cache_${{ steps.init.x86arch }}
+          cd cache_${{ steps.init.outputs.x86arch }}
           touch MD5SUMS
           cat <<EOM > MD5SUMS
           x86::8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
