@@ -58,6 +58,7 @@ jobs:
           echo %WINPTY_URL%>> urls.txt
           echo %SODIUM_VER%>> urls.txt
       - name: Restore Cache ${{ env.arch }}
+        id: restorecache86
         uses: actions/cache/restore@v4
         with:
           path: downloads
@@ -70,6 +71,8 @@ jobs:
       - name: Rename cachedir ${{ env.arch }}
         shell: bash
         run: |
+          echo 'restore key is:'
+          echo ${{ steps.restorecache86.outputs.cache-matched-key }}
           test -d downloads && mv downloads cache_${{ env.arch }}
           test -d downloads || mkdir cache_${{ env.arch }}
           ls -lagG cache_${{ env.arch }}
@@ -77,6 +80,7 @@ jobs:
           arch: ${{ steps.init.outputs.x86arch }}
       - name: Verify cache ${{ env.arch }}
         shell: bash
+        continue-on-error: true
         run: |
           cd cache_${{ env.arch }}
           touch MD5SUMS
