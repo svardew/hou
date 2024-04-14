@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   windows-cache:
-    runs-on: windows-2022
+    runs-on: ubuntu-latest
     env:
       thisworkflowname: Cache check windows
       usage: caller_workflow.jobs.xxx.uses ./.github/workflow/called_workflow.yml
@@ -47,23 +47,20 @@ jobs:
     steps:
       - name: Initialize
         id: init
-        shell: bash
         run: |
-          cmd /c ver
-          git config --global core.autocrlf input
-          # xmatrix:
+          # pseudo matrix. first x86, then x64 serial run.
           echo "x86arch=x86" >> $GITHUB_OUTPUT
           echo "x86bits=32" >> $GITHUB_OUTPUT
           echo "x64arch=x64" >> $GITHUB_OUTPUT
           echo "x64bits=64" >> $GITHUB_OUTPUT
       - name: Key file (list of download URLs)
-        shell: cmd
         run: |
-          type NUL > urls.txt
-          echo %LUA_RELEASE%>> urls.txt
-          echo %WINPTY_URL%>> urls.txt
-          echo %SODIUM_VER%>> urls.txt
-          if not exist downloads mkdir downloads
+          touch urls.txt
+          echo ${{ env.LUA_RELEASE }} >> urls.txt
+          echo ${{ env.WINPTY_URL }}  >> urls.txt
+          echo ${{ env.SODIUM_VER }}  >> urls.txt
+          sed -i 's/$/\r/g' urls.txt
+          test -d downloads || mkdir downloads
 
       - name: Restore Cache ${{ env.arch }}
         id: restorecache86
@@ -79,20 +76,17 @@ jobs:
 
       - name: Download dependencies ${{ env.arch }}
         if: ${{ steps.restorecache86.outputs.cache-matched-key == '' }}
-        shell: cmd
         run: |
-          if not exist downloads mkdir downloads
-          type NUL> httpget.rb
-          echo require 'net/http' >> httpget.rb
-          echo require 'uri' >> httpget.rb
-          echo unless File.file? ARGV[1] do >> httpget.rb
-          echo   File.open(ARGV[1],'wb') do |io| >> httpget.rb
-          echo     io.print Net::HTTP.get(URI.parse ARGV[0]) >> httpget.rb
-          echo   end >> httpget.rb
-          echo end >> httpget.rb
-          cat httpget.rb
-          ruby httpget.rb ${{ env.LUA32_URL }} downloads\lua.zip
-          dir downloads
+          dlfile2 () {
+            if [ -f downloads/$2 ];then
+              echo Skip Downlaod. $2
+            else
+              wget -nv --tries=2 --retry-wait=10 -O $2 $1
+            fi
+          }
+          test -d downloads || mkdir downloads
+          dlfile2 ${{ env.LUA32_URL }} downloads/lua.zip
+          ls -lahgG downloads
 
       - name: Rename cachedir ${{ env.arch }}
         shell: bash
