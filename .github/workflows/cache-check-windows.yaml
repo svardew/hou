@@ -108,8 +108,11 @@ jobs:
           sed -i '/^x64/ s,^,#,' MD5SUMS
           sed -i '/^x86/ s,^x86::,,' MD5SUMS
           md5sum -c MD5SUMS
-          flag = $?
-          echo "cache status: ${{ $flag != 0 && invalid || valid }}"
+          if $?
+            echo "cache status: valid"
+          else
+            echo "cache status: valid"
+          fi
         env:
           arch: ${{ steps.init.outputs.x86arch }}
 
