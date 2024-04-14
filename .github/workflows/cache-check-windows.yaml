@@ -83,13 +83,13 @@ jobs:
         run: |
           if not exist downloads mkdir downloads
           type NUL> httpget.rb
-          echo "require 'net/http'" >> httpget.rb
-          echo "require 'uri'" >> httpget.rb
-          echo "unless File.file? ARGV[1] do" >> httpget.rb
-          echo "  File.open(ARGV[1],'wb') do |io|" >> httpget.rb
-          echo "    io.print Net::HTTP.get(URI.parse ARGV[0])" >> httpget.rb
-          echo "  end" >> httpget.rb
-          echo "end" >> httpget.rb
+          echo require 'net/http' >> httpget.rb
+          echo require 'uri' >> httpget.rb
+          echo unless File.file? ARGV[1] do >> httpget.rb
+          echo   File.open(ARGV[1],'wb') do |io| >> httpget.rb
+          echo     io.print Net::HTTP.get(URI.parse ARGV[0]) >> httpget.rb
+          echo   end >> httpget.rb
+          echo end >> httpget.rb
           cat httpget.rb
           ruby httpget.rb ${{ env.LUA32_URL }} downloads\lua.zip
           dir downloads
