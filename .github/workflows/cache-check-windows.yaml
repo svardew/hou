@@ -24,7 +24,13 @@ jobs:
     env:
       thisworkflowname: Cache check windows
       usage: caller_workflow.jobs.xxx.uses ./.github/workflow/called_workflow.yml
-      xmatrix: { x86: {arch: x86, BITS: 32}, x64: {arch: x64, BITS: 64} }
+      xmatrix:
+        x86:
+          arch: x86
+          BITS: 32
+        x64:
+          arch: x64
+          BITS: 64
       # Lua
       LUA_VER: 54
       LUA_VER_DOT: '5.4'
@@ -39,18 +45,8 @@ jobs:
       SODIUM_MSVC_VER: v143
       SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
       SODIUM_MINGW_VER: 26
-      # checksum
-      MD5SUMS:
-        x86: |
-          8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
-          113f036c91f06a9fdb11186e3dce7d93  libsodium.zip
-          25b07e2b5177a2f071f109f641f9e3e4  lua.zip
-          a0f941c53b8e509712eeca46104674c4  winpty.zip
-        x64: |
-          8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
-          113f036c91f06a9fdb11186e3dce7d93  libsodium.zip
-          132834e89206d893630410fa2192bd2a  lua.zip
-          a0f941c53b8e509712eeca46104674c4  winpty.zip
+
+
     steps:
       - name: Initialize
         id: init
@@ -84,6 +80,16 @@ jobs:
         run: |
           cd cache_${{ env.xmatrix.x86.arch }}
           touch MD5SUMS
+          cat <<EOM > MD5SUMS
+          x86::8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
+          x86::113f036c91f06a9fdb11186e3dce7d93  libsodium.zip
+          x86::25b07e2b5177a2f071f109f641f9e3e4  lua.zip
+          x86::a0f941c53b8e509712eeca46104674c4  winpty.zip
+          x64::8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
+          x64::113f036c91f06a9fdb11186e3dce7d93  libsodium.zip
+          x64::132834e89206d893630410fa2192bd2a  lua.zip
+          x64::a0f941c53b8e509712eeca46104674c4  winpty.zip
+          EOM
           echo ${{ env.MD5SUMS.x86 }} > MD5SUMS
           md5sum -c MD5SUMS
 
