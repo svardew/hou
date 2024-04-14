@@ -79,32 +79,33 @@ jobs:
 
       - name: Download dependencies ${{ env.arch }}
         if: ${{ steps.restorecache86.outputs.cache-matched-key == '' }}
-        shell: cmd
+        shell: bash
         run: |
+          downloadfile () {
+            if [ -f "downloads/$2" ];then
+              echo SKIP Download. $2
+            else
+              wget -nv --tries=2 --wait-retry=10 -O $2 $1
+            fi
+          }
+          test -d downloads || mkdir downloads
           echo Download Lua
-          call :downloadfile %LUA${{ env.x86bits }}_URL% downloads\lua.zip
+          url=${{ env.LUA32_URL }}
+          ver=${{ env.LUA_RELEASE }}
+          url=${url/\%LUA_VERSION\%/$ver}
+          downloadfile $url downloads/lua.zip
           echo Download winpty
-          call :downloadfile %WINPTY_URL% downloads\winpty.zip
+          downloadfile ${{ env.WINPTY_URL }} downloads/winpty.zip
           echo Download libsodium msvc
-          call :downloadfile %SODIUM_MSVC_URL% downloads\libsodium.zip
+          ver=${{ env.SODIUM_VER }}
+          url=${{ env.SODIUM_MSVC_URL }}
+          url=${url/\%SODIUM-VER\%/$ver}
+          downloadfile $url downloads/libsodium.zip
           echo Download libsodium mingw
-          call :downloadfile %SODIUM_MINGW_URL% downloads\libsodium.tar.gz
-
-          goto :eof
-
-          :downloadfile
-          :: call :downloadfile <URL> <localfile>
-          if exist %2 (
-            echo Skip Download. File eixst %2
-          )
-          if not exist %2 (
-            curl -f -L %1 -o %2
-          )
-          if ERRORLEVEL 1 (
-            rem Retry once.
-            curl -f -L %1 -o %2 || exit 1
-          )
-          goto :eof
+          ver=${{ env.SODIUM_VER }}
+          url=${{ env.SODIUM_MINGW_URL }}
+          url=${url/\%SODIUM-VER\%/$ver}
+          downloadfile $url downloads/libsodium.tar.gz
 
       - name: Rename cachedir ${{ env.arch }}
         shell: bash
