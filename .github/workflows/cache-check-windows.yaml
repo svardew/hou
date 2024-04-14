@@ -96,8 +96,9 @@ jobs:
         run: |
           echo 'restore key is:'
           echo ${{ steps.restorecache86.outputs.cache-matched-key }}
-          test -d downloads && mv downloads cache_${{ env.arch }}
-          test -d downloads || mkdir cache_${{ env.arch }}
+          echo 'copy files ./cache_${{ env.arch }}'
+          test -d cache_${{ env.arch }} || mkdir cache_${{ env.arch }}
+          test -d downloads && cp downloads/* cache_${{ env.arch }}
           ls -lagG cache_${{ env.arch }}
         env:
           arch: ${{ steps.init.outputs.x86arch }}
@@ -120,11 +121,12 @@ jobs:
           x64::132834e89206d893630410fa2192bd2a  lua.zip
           x64::a0f941c53b8e509712eeca46104674c4  winpty.zip
           EOM
-          sed -i '/^x64/ s,^,#,' MD5SUMS
+          sed -i '/^x64/d' MD5SUMS
           sed -i '/^x86/ s,^x86::,,' MD5SUMS
           md5sum -c MD5SUMS
-          if $?
-            echo "cache status: valid"
+          flag=$?
+          if $flag
+            echo "cache status: invalid "$?
           else
             echo "cache status: valid"
           fi
