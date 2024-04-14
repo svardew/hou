@@ -17,15 +17,12 @@ concurrency:
 permissions:
   contents: read # to fetch code (actions/checkout)
 
-
 jobs:
   windows:
     runs-on: windows-2022
     env:
       thisworkflowname: Cache check windows
       usage: caller_workflow.jobs.xxx.uses ./.github/workflow/called_workflow.yml
-
-
       # Lua
       LUA_VER: 54
       LUA_VER_DOT: '5.4'
@@ -60,28 +57,28 @@ jobs:
           echo %LUA_RELEASE%>> urls.txt
           echo %WINPTY_URL%>> urls.txt
           echo %SODIUM_VER%>> urls.txt
-      - name: Restore Cache $arch
+      - name: Restore Cache ${{ env.arch }}
         uses: actions/cache/restore@v4
         with:
           path: downloads
-          key: ${{ runner.os }}-$arch-runid_${{ inputs.runid }}
+          key: ${{ runner.os }}-${{ env.arch }}-runid_${{ inputs.runid }}
           restore-keys: |
-            ${{ runner.os }}-$arch-${{ hashFiles('urls.txt') }}
-            ${{ runner.os }}-$arch-runid_
+            ${{ runner.os }}-${{ env.arch }}-${{ hashFiles('urls.txt') }}
+            ${{ runner.os }}-${{ env.arch }}-runid_
         env:
           arch: ${{ steps.init.outputs.x86arch }}
-      - name: Rename cachedir $arch
+      - name: Rename cachedir ${{ env.arch }}
         shell: bash
         run: |
-          test -d downloads && mv downloads cache_$arch
-          test -d downloads || mkdir cache_$arch
-          ls -lagG cache_$arch
+          test -d downloads && mv downloads cache_${{ env.arch }}
+          test -d downloads || mkdir cache_${{ env.arch }}
+          ls -lagG cache_${{ env.arch }}
         env:
           arch: ${{ steps.init.outputs.x86arch }}
-      - name: Verify cache $arch
+      - name: Verify cache ${{ env.arch }}
         shell: bash
         run: |
-          cd cache_$arch
+          cd cache_${{ env.arch }}
           touch MD5SUMS
           cat <<EOM > MD5SUMS
           x86::8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
