@@ -95,7 +95,7 @@ jobs:
           :downloadfile
           :: call :downloadfile <URL> <localfile>
           if exist %2 (
-            echo Skip Download. File eixst __ %2
+            echo Skip Download. File eixst %2
           )
           if not exist %2 (
             curl -f -L %1 -o %2
