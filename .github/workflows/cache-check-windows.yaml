@@ -63,6 +63,8 @@ jobs:
           echo %LUA_RELEASE%>> urls.txt
           echo %WINPTY_URL%>> urls.txt
           echo %SODIUM_VER%>> urls.txt
+          if not exist downloads mkdir downloads
+
       - name: Restore Cache ${{ env.arch }}
         id: restorecache86
         uses: actions/cache/restore@v4
@@ -75,8 +77,36 @@ jobs:
         env:
           arch: ${{ steps.init.outputs.x86arch }}
 
+      - name: Download dependencies ${{ env.arch }}
+        if: ${{ steps.restorecache86.outputs.cache-matched-key == '' }}
+        shell: cmd
+        run: |
+          echo Download Lua
+          call :downloadfile %LUA${{ env.x86bits }}_URL% downloads\lua.zip
+          echo Download winpty
+          call :downloadfile %WINPTY_URL% downloads\winpty.zip
+          echo Download libsodium msvc
+          call :downloadfile %SODIUM_MSVC_URL% downloads\libsodium.zip
+          echo Download libsodium mingw
+          call :downloadfile %SODIUM_MINGW_URL% downloads\libsodium.tar.gz
+
+          goto :eof
+
+          :downloadfile
+          :: call :downloadfile <URL> <localfile>
+          if exist %2 (
+            echo Skip Download. File eixst __ %2
+          )
+          if not exist %2 (
+            curl -f -L %1 -o %2
+          )
+          if ERRORLEVEL 1 (
+            rem Retry once.
+            curl -f -L %1 -o %2 || exit 1
+          )
+          goto :eof
+
       - name: Rename cachedir ${{ env.arch }}
-        if: ${{ steps.restorecache86.outputs.cache-matched-key != '' }}
         shell: bash
         run: |
           echo 'restore key is:'
