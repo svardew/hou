@@ -79,33 +79,35 @@ jobs:
 
       - name: Download dependencies ${{ env.arch }}
         if: ${{ steps.restorecache86.outputs.cache-matched-key == '' }}
-        shell: bash
+        shell: cmd
         run: |
-          downloadfile () {
-            if [ -f "downloads/$2" ];then
-              echo SKIP Download. $2
-            else
-              wget -nv --tries=2 --wait-retry=10 -O $2 $1
-            fi
-          }
-          test -d downloads || mkdir downloads
-          echo Download Lua
-          url=${{ env.LUA32_URL }}
-          ver=${{ env.LUA_RELEASE }}
-          url=${url/\%LUA_VERSION\%/$ver}
-          downloadfile $url downloads/lua.zip
-          echo Download winpty
-          downloadfile ${{ env.WINPTY_URL }} downloads/winpty.zip
-          echo Download libsodium msvc
-          ver=${{ env.SODIUM_VER }}
-          url=${{ env.SODIUM_MSVC_URL }}
-          url=${url/\%SODIUM-VER\%/$ver}
-          downloadfile $url downloads/libsodium.zip
-          echo Download libsodium mingw
-          ver=${{ env.SODIUM_VER }}
-          url=${{ env.SODIUM_MINGW_URL }}
-          url=${url/\%SODIUM-VER\%/$ver}
-          downloadfile $url downloads/libsodium.tar.gz
+          ruby -v
+          ruby -r net/http -e 'puts ARGV' ${{ env.LUA32_URL }} downloads\lua.zip
+          # downloadfile () {
+          #   if [ -f "downloads/$2" ];then
+          #     echo SKIP Download. $2
+          #   else
+          #     wget -nv --tries=2 --wait-retry=10 -O $2 $1
+          #   fi
+          # }
+          # test -d downloads || mkdir downloads
+          # echo Download Lua
+          # url=${{ env.LUA32_URL }}
+          # ver=${{ env.LUA_RELEASE }}
+          # url=${url/\%LUA_VERSION\%/$ver}
+          # downloadfile $url downloads/lua.zip
+          # echo Download winpty
+          # downloadfile ${{ env.WINPTY_URL }} downloads/winpty.zip
+          # echo Download libsodium msvc
+          # ver=${{ env.SODIUM_VER }}
+          # url=${{ env.SODIUM_MSVC_URL }}
+          # url=${url/\%SODIUM-VER\%/$ver}
+          # downloadfile $url downloads/libsodium.zip
+          # echo Download libsodium mingw
+          # ver=${{ env.SODIUM_VER }}
+          # url=${{ env.SODIUM_MINGW_URL }}
+          # url=${url/\%SODIUM-VER\%/$ver}
+          # downloadfile $url downloads/libsodium.tar.gz
 
       - name: Rename cachedir ${{ env.arch }}
         shell: bash
