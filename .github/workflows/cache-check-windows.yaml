@@ -90,6 +90,8 @@ jobs:
           x64::132834e89206d893630410fa2192bd2a  lua.zip
           x64::a0f941c53b8e509712eeca46104674c4  winpty.zip
           EOM
+          sed -i '/^x64/ s,^,#,' MD5SUMS
+          sed -i '/^x86/ s,^x86::,,' MD5SUMS
           md5sum -c MD5SUMS
         env:
           arch: ${{ steps.init.outputs.x86arch }}
