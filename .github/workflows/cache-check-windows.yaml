@@ -7,6 +7,10 @@ on:
       runid:
         required: true
         type: string
+    outputs:
+      restore-key:
+        description: "use this KEY for cache, Windows-{arch}-KEY"
+        value: ${{ jobs.windows-cache.outputs.restore-key }}
 
 concurrency:
   # The concurrency group contains the workflow name and the branch name for
@@ -18,7 +22,7 @@ permissions:
   contents: read # to fetch code (actions/checkout)
 
 jobs:
-  windows:
+  windows-cache:
     runs-on: windows-2022
     env:
       thisworkflowname: Cache check windows
@@ -37,6 +41,8 @@ jobs:
       SODIUM_MSVC_VER: v143
       SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
       SODIUM_MINGW_VER: 26
+    outputs:
+      restore-key: ${{ steps.validkey.outputs.restore-key }}
 
     steps:
       - name: Initialize
@@ -68,7 +74,9 @@ jobs:
             ${{ runner.os }}-${{ env.arch }}-runid_
         env:
           arch: ${{ steps.init.outputs.x86arch }}
+
       - name: Rename cachedir ${{ env.arch }}
+        if: ${{ steps.restorecache86.outputs.cache-matched-key != '' }}
         shell: bash
         run: |
           echo 'restore key is:'
@@ -78,7 +86,10 @@ jobs:
           ls -lagG cache_${{ env.arch }}
         env:
           arch: ${{ steps.init.outputs.x86arch }}
+
       - name: Verify cache ${{ env.arch }}
+        if: ${{ steps.restorecache86.outputs.cache-matched-key != '' }}
+        id: verifycache
         shell: bash
         continue-on-error: true
         run: |
@@ -97,8 +108,15 @@ jobs:
           sed -i '/^x64/ s,^,#,' MD5SUMS
           sed -i '/^x86/ s,^x86::,,' MD5SUMS
           md5sum -c MD5SUMS
+          flag = $?
+          echo "cache status: ${{ $flag != 0 && invalid || valid }}"
         env:
           arch: ${{ steps.init.outputs.x86arch }}
+
+      - name: return valid KEY ${{ env.arch }}
+        id: validkey
+        run: |
+          echo "restore-key=UNKNOWN" >> $GITHUB_OUTPUT
 
 
 
