@@ -1,0 +1,95 @@
+name: Cache check windows
+
+on:
+  workflow_call:
+    inputs:
+      runid:
+        required: true
+        type: string
+  workflow_dispatch:
+
+concurrency:
+  # The concurrency group contains the workflow name and the branch name for
+  # pull requests or the commit hash for any other events.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+
+jobs:
+  runs-on: windows-2022
+
+  env:
+    thisworkflowname: Cache check windows
+    usage: caller_workflow.jobs.xxx.uses ./.github/workflow/called_workflow.yml
+    xmatrix: { x86: {arch: x86, BITS: 32}, x64: {arch: x64, BITS: 64} }
+    # Lua
+    LUA_VER: 54
+    LUA_VER_DOT: '5.4'
+    LUA_RELEASE: 5.4.2
+    LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
+    LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
+    # winpty
+    WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+    # libsodium
+    SODIUM_VER: '1.0.19'
+    SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
+    SODIUM_MSVC_VER: v143
+    SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
+    SODIUM_MINGW_VER: 26
+    # checksum
+    MD5SUMS:
+      x86: |
+        8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
+        113f036c91f06a9fdb11186e3dce7d93  libsodium.zip
+        25b07e2b5177a2f071f109f641f9e3e4  lua.zip
+        a0f941c53b8e509712eeca46104674c4  winpty.zip
+      x64: |
+        8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
+        113f036c91f06a9fdb11186e3dce7d93  libsodium.zip
+        132834e89206d893630410fa2192bd2a  lua.zip
+        a0f941c53b8e509712eeca46104674c4  winpty.zip
+
+  steps:
+    - name: Initialize
+      id: init
+      shell: bash
+      run: |
+        cmd /c ver
+        git config --global core.autocrlf input
+    - name: Key file (list of download URLs)
+      shell: cmd
+      run: |
+        type NUL > urls.txt
+        echo %LUA_RELEASE%>> urls.txt
+        echo %WINPTY_URL%>> urls.txt
+        echo %SODIUM_VER%>> urls.txt
+    - name: Restore Cache ${{ env.xmatrix.x86.arch }}
+      uses: actions/cache/restore@v4
+      with:
+        path: downloads
+        key: ${{ runner.os }}-${{ env.xmatrix.x86.arch }}-runid_${{ inputs.runid }}
+        restore-keys: |
+          ${{ runner.os }}-${{ env.xmatrix.x86.arch }}-${{ hashFiles('urls.txt') }}
+          ${{ runner.os }}-${{ env.xmatrix.x86.arch }}-runid_
+    - name: Rename cachedir ${{ env.xmatrix.x86.arch }}
+      shell: bash
+      run: |
+        test -d downloads && mv downloads cache_${{ env.xmatrix.x86.arch }}
+        test -d downloads || mkdir cache_${{ env.xmatrix.x86.arch }}
+        ls -lagG ${{ env.xmatrix.x86.arch }}
+    - name: Verify cache ${{ env.xmatrix.x86.arch }}
+      shell: bash
+      run: |
+        cd cache_${{ env.xmatrix.x86.arch }}
+        touch MD5SUMS
+        echo ${{ env.MD5SUMS.x86 }} > MD5SUMS
+        md5sum -c MD5SUMS
+
+
+
+
+
+
