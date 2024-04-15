@@ -111,7 +111,7 @@ jobs:
           cd downloads
           md5sum -c ../MD5SUMS
           flag=$?
-          if $flag
+          if [ $flag -gt 0 ]; then
             echo "cache status: invalid "$?
             echo "FLAG=invalid" >> $GITHUB_OUTPUT
           else
@@ -129,7 +129,7 @@ jobs:
             if [ -f downloads/$2 ]; then
               echo Skip Downlaod. $2
             else
-              wget -nv --tries=2 --waitretry=10 -O $2 $1
+              wget -nv --tries=2 --waitretry=10 -O ./downloads/$2 $1
             fi
           }
           dlf2 ${{ steps.init.outputs.LUA32_URL }}        ${{ steps.init.outputs.LUA32_FILE }}
@@ -147,7 +147,7 @@ jobs:
           cd downloads
           md5sum -c ../MD5SUMS
           flag=$?
-          if $flag
+          if [ $flag -gt 0 ]; then
             echo "cache status: invalid "$?
             echo "FLAG=invalid" >> $GITHUB_OUTPUT
           else
