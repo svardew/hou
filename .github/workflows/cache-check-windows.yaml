@@ -106,6 +106,7 @@ jobs:
       - name: Verify cache
         id: verifycache
         continue-on-error: true
+        shell: bash {0}
         run: |
           # restored from ${{ steps.restorecache.outputs.cache-matched-key }}
           cd downloads
