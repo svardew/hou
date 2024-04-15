@@ -118,9 +118,10 @@ jobs:
           else
             echo "cache status: valid"
             echo "FLAG=valid" >> $GITHUB_OUTPUT
-            validkey=${{ steps.restorecache.outputs.cache-matched-key }}
-            echo "KEY=$validkey" >> $GITHUB_OUTPUT
+            echo "KEY=$restorecache_matched_key" >> $GITHUB_OUTPUT
           fi
+        env:
+          restorecache_matched_key: ${{ steps.restorecache.outputs.cache-matched-key }}
 
       - name: Download dependencies
         if: ${{ steps.verifycache.outputs.FLAG == 'invalid' }}
@@ -156,9 +157,10 @@ jobs:
             echo "FLAG=valid" >> $GITHUB_OUTPUT
             # validkey=${{ runner.os }}-runid_${{ inputs.runid }}
             # ^^^ caller runid expect, but workflow_dispatch:
-            validkey=${{ runner.os }}-runid_${{ github.run_id }}
-            echo "KEY=$validkey" >> $GITHUB_OUTPUT
+            echo "KEY=$savenewcachekey" >> $GITHUB_OUTPUT
           fi
+        env:
+          savenewcachekey: ${{ runner.os }}-runid_${{ github.run_id }}
 
       - name: Save cache
         if: ${{ steps.verifydownloads.outputs.FLAG == 'valid' }}
@@ -171,11 +173,15 @@ jobs:
       - name: return valid KEY
         id: validkey
         run: |
-          if [ ${{ steps.verifycache.outputs.KEY }} != '' ]; then
-            key=${{ steps.verifycache.outputs.KEY }}
-            echo "restore-key=$key" >> $GITHUB_OUTPUT
-          elif [ ${{ steps.verifydownloads.outputs.KEY }} != '' ]; then
-            key=${{ steps.verifycache.outputs.KEY }}
-            echo "restore-key=$key" >> $GITHUB_OUTPUT
+          if [ $restorecacheflag == 'valid' ]; then
+            echo "restore-key=$restorecache_key" >> $GITHUB_OUTPUT
+          elif [ $savenewcacheflag == 'valid' ]; then
+            echo "restore-key=$savenewcache_key" >> $GITHUB_OUTPUT
           fi
+        env:
+          restorecacheflag: ${{ steps.verifycache.outputs.FLAG }}
+          savenewcacheflag: ${{ steps.verifydownloads.outputs.FLAG }}
+          restorecache_key: ${{ steps.verifycache.outputs.KEY }}
+          savenewcache_key: ${{ steps.verifydownloads.outputs.KEY }}
+
 
