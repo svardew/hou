@@ -122,7 +122,7 @@ jobs:
           fi
 
       - name: Download dependencies
-        if: ${{ steps.verifycache.outputs.FLAG != 'valid' }}
+        if: ${{ steps.verifycache.outputs.FLAG == 'invalid' }}
         run: |
           test -d downloads || mkdir downloads
           dlf2 () {
@@ -140,7 +140,7 @@ jobs:
           ls -lagG downloads
 
       - name: Verify downloaded dependencies
-        if: ${{ steps.verifycache.outputs.FLAG != '' }}
+        if: ${{ steps.verifycache.outputs.FLAG == 'invalid' }}
         id: verifydownloads
         continue-on-error: true
         run: |
@@ -153,7 +153,9 @@ jobs:
           else
             echo "cache status: valid"
             echo "FLAG=valid" >> $GITHUB_OUTPUT
-            validkey=${{ runner.os }}-runid_${{ inputs.runid }}
+            # validkey=${{ runner.os }}-runid_${{ inputs.runid }}
+            # ^^^ caller runid expect, but workflow_dispatch:
+            validkey=${{ runner.os }}-runid_${{ github.run_id }}
             echo "KEY=$validkey" >> $GITHUB_OUTPUT
           fi
 
