@@ -25,8 +25,6 @@ jobs:
   windows-cache:
     runs-on: ubuntu-latest
     env:
-      thisworkflowname: Cache check windows
-      usage: caller_workflow.jobs.xxx.uses ./.github/workflow/called_workflow.yml
       # Lua
       LUA_VER: 54
       LUA_VER_DOT: '5.4'
@@ -47,12 +45,45 @@ jobs:
     steps:
       - name: Initialize
         id: init
+        shell: bash {0}
         run: |
-          # pseudo matrix. first x86, then x64 serial run.
-          echo "x86arch=x86" >> $GITHUB_OUTPUT
-          echo "x86bits=32" >> $GITHUB_OUTPUT
-          echo "x64arch=x64" >> $GITHUB_OUTPUT
-          echo "x64bits=64" >> $GITHUB_OUTPUT
+          # url, filename
+          ver=${{ env.LUA_RELEASE }}
+          url=${{ env.LUA32_URL }}
+          url=${url/\%LUA_RELEASE\%/$ver}
+          f=$(basename $url)
+          echo "LUA32_URL=$url" >> $GITHUB_OUTPUT
+          echo "LUA32_FILE=$f" >> $GITHUB_OUTPUT
+          url=${{ env.LUA64_URL }}
+          url=${url/\%LUA_RELEASE\%/$ver}
+          f=$(basename $url)
+          echo "LUA64_URL=$url" >> $GITHUB_OUTPUT
+          echo "LUA64_FILE=$f" >> $GITHUB_OUTPUT
+          ver=${{ env.SODIUM_VER }}
+          url=${{ env.SODIUM_MSVC_URL }}
+          url=${url/\%SODIUM_VER\%/$ver}
+          f=$(basename $url)
+          echo "SODIUM_MSVC_URL=$url" >> $GITHUB_OUTPUT
+          echo "SODIUM_MSVC_FILE=$f" >> $GITHUB_OUTPUT
+          url=${{ env.SODIUM_MINGW_URL }}
+          url=${url/\%SODIUM_VER\%/$ver}
+          f=$(basename $url)
+          echo "SODIUM_MINGW_URL=$url" >> $GITHUB_OUTPUT
+          echo "SODIUM_MINGW_FILE=$f" >> $GITHUB_OUTPUT
+          url=${{ env.WINPTY_URL }}
+          f=$(basename $url)
+          echo "WINPTY_URL=$url" >> $GITHUB_OUTPUT
+          echo "WINPTY_FILE=$f" >> $GITHUB_OUTPUT
+          # checksum
+          touch MD5SUMS
+          cat <<EOM > MD5SUMS
+          25b07e2b5177a2f071f109f641f9e3e4  lua-5.4.2_Win32_dllw6_lib.zip
+          132834e89206d893630410fa2192bd2a  lua-5.4.2_Win64_dllw6_lib.zip
+          a0f941c53b8e509712eeca46104674c4  winpty-0.4.3-msvc2015.zip
+          113f036c91f06a9fdb11186e3dce7d93  libsodium-1.0.19-stable-msvc.zip
+          8867b0380daabd12ece3dbad73197e78  libsodium-1.0.19-stable-mingw.tar.gz
+          EOM
+
       - name: Key file (list of download URLs)
         run: |
           touch urls.txt
@@ -62,84 +93,86 @@ jobs:
           sed -i 's/$/\r/g' urls.txt
           test -d downloads || mkdir downloads
 
-      - name: Restore Cache ${{ env.arch }}
-        id: restorecache86
+      - name: Restore Cache
+        id: restorecache
         uses: actions/cache/restore@v4
         with:
           path: downloads
-          key: ${{ runner.os }}-${{ env.arch }}-runid_${{ inputs.runid }}
+          key: ${{ runner.os }}-runid_${{ inputs.runid }}
           restore-keys: |
-            ${{ runner.os }}-${{ env.arch }}-${{ hashFiles('urls.txt') }}
-            ${{ runner.os }}-${{ env.arch }}-runid_
-        env:
-          arch: ${{ steps.init.outputs.x86arch }}
+            ${{ runner.os }}-${{ hashFiles('urls.txt') }}
+            ${{ runner.os }}-runid_
 
-      - name: Download dependencies ${{ env.arch }}
-        if: ${{ steps.restorecache86.outputs.cache-matched-key == '' }}
+      - name: Verify cache
+        id: verifycache
+        continue-on-error: true
         run: |
-          dlfile2 () {
-            if [ -f downloads/$2 ];then
+          # restored from ${{ steps.restorecache.outputs.cache-matched-key }}
+          cd downloads
+          md5sum -c ../MD5SUMS
+          flag=$?
+          if $flag
+            echo "cache status: invalid "$?
+            echo "FLAG=invalid" >> $GITHUB_OUTPUT
+          else
+            echo "cache status: valid"
+            echo "FLAG=valid" >> $GITHUB_OUTPUT
+            validkey=${{ steps.restorecache.outputs.cache-matched-key }}
+            echo "KEY=$validkey" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download dependencies
+        if: ${{ steps.verifycache.outputs.FLAG != 'valid' }}
+        run: |
+          test -d downloads || mkdir downloads
+          dlf2 () {
+            if [ -f downloads/$2 ]; then
               echo Skip Downlaod. $2
             else
               wget -nv --tries=2 --waitretry=10 -O $2 $1
             fi
           }
-          test -d downloads || mkdir downloads
-          url=${{ env.LUA32_URL }}
-          sub=${{ env.LUA_RELEASE }}
-          url=${url/\%LUA_RELEASE\%/$sub}
-          dlfile2 $url downloads/lua.zip
-          ls -lahgG downloads
+          dlf2 ${{ steps.init.outputs.LUA32_URL }}        ${{ steps.init.outputs.LUA32_FILE }}
+          dlf2 ${{ steps.init.outputs.LUA64_URL }}        ${{ steps.init.outputs.LUA64_FILE }}
+          dlf2 ${{ steps.init.outputs.WINPTY_URL }}       ${{ steps.init.outputs.WINPTY_FILE }}
+          dlf2 ${{ steps.init.outputs.SODIUM_MSVC_URL }}  ${{ steps.init.outputs.SODIUM_MSVC_FILE }}
+          dlf2 ${{ steps.init.outputs.SODIUM_MINGW_URL }} ${{ steps.init.outputs.SODIUM_MINGW_FILE }}
+          ls -lagG downloads
 
-      - name: Rename cachedir ${{ env.arch }}
-        shell: bash
-        run: |
-          echo 'restore key is:'
-          echo ${{ steps.restorecache86.outputs.cache-matched-key }}
-          echo 'copy files ./cache_${{ env.arch }}'
-          test -d cache_${{ env.arch }} || mkdir cache_${{ env.arch }}
-          test -d downloads && cp downloads/* cache_${{ env.arch }}
-          ls -lagG cache_${{ env.arch }}
-        env:
-          arch: ${{ steps.init.outputs.x86arch }}
-
-      - name: Verify cache ${{ env.arch }}
-        if: ${{ steps.restorecache86.outputs.cache-matched-key != '' }}
-        id: verifycache
-        shell: bash
+      - name: Verify downloaded dependencies
+        if: ${{ steps.verifycache.outputs.FLAG != '' }}
+        id: verifydownloads
         continue-on-error: true
         run: |
-          cd cache_${{ env.arch }}
-          touch MD5SUMS
-          cat <<EOM > MD5SUMS
-          x86::8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
-          x86::113f036c91f06a9fdb11186e3dce7d93  libsodium.zip
-          x86::25b07e2b5177a2f071f109f641f9e3e4  lua.zip
-          x86::a0f941c53b8e509712eeca46104674c4  winpty.zip
-          x64::8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
-          x64::113f036c91f06a9fdb11186e3dce7d93  libsodium.zip
-          x64::132834e89206d893630410fa2192bd2a  lua.zip
-          x64::a0f941c53b8e509712eeca46104674c4  winpty.zip
-          EOM
-          sed -i '/^x64/d' MD5SUMS
-          sed -i '/^x86/ s,^x86::,,' MD5SUMS
-          md5sum -c MD5SUMS
+          cd downloads
+          md5sum -c ../MD5SUMS
           flag=$?
           if $flag
             echo "cache status: invalid "$?
+            echo "FLAG=invalid" >> $GITHUB_OUTPUT
           else
             echo "cache status: valid"
+            echo "FLAG=valid" >> $GITHUB_OUTPUT
+            validkey=${{ runner.os }}-runid_${{ inputs.runid }}
+            echo "KEY=$validkey" >> $GITHUB_OUTPUT
           fi
-        env:
-          arch: ${{ steps.init.outputs.x86arch }}
 
-      - name: return valid KEY ${{ env.arch }}
+      - name: Save cache
+        if: ${{ steps.verifydownloads.outputs.FLAG == 'valid' }}
+        uses: actions/cache/save@v4
+        with:
+          path: downloads
+          key: ${{ steps.verifydownloads.outputs.KEY }}
+          enableCrossOsArchive: true
+
+      - name: return valid KEY
         id: validkey
         run: |
-          echo "restore-key=UNKNOWN" >> $GITHUB_OUTPUT
-
-
-
-
-
+          if [ ${{ steps.verifycache.outputs.KEY }} != '' ]; then
+            key=${{ steps.verifycache.outputs.KEY }}
+            echo "restore-key=$key" >> $GITHUB_OUTPUT
+          elif [ ${{ steps.verifydownloads.outputs.KEY }} != '' ]; then
+            key=${{ steps.verifycache.outputs.KEY }}
+            echo "restore-key=$key" >> $GITHUB_OUTPUT
+          fi
 
