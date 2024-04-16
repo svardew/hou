@@ -148,9 +148,9 @@ jobs:
 
       - name: Restore cache downloaded files
         uses: actions/cache/restore@v4
-        enableCrossOsArchive: true
         with:
           path: downloads
+          enableCrossOsArchive: true
           # key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('urls.txt') }}
           key: ${{ env.restore-key }}
           restore-keys: |
