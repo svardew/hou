@@ -147,7 +147,8 @@ jobs:
           echo %SODIUM_VER%>> urls.txt
 
       - name: Restore cache downloaded files
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
+        enableCrossOsArchive: true
         with:
           path: downloads
           # key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('urls.txt') }}
