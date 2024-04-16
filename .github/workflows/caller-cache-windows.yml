@@ -145,6 +145,13 @@ jobs:
           echo %LUA_RELEASE%>> urls.txt
           echo %WINPTY_URL%>> urls.txt
           echo %SODIUM_VER%>> urls.txt
+
+      - name: Inform restore-key
+        shell: cmd
+        run: |
+          echo Key file content is
+          type urls.txt
+          echo +++
           echo current workflow run_id is
           echo ${{ github.run_id }}
           echo +++
@@ -152,10 +159,13 @@ jobs:
           echo 1-from-called-workflow-checked
           echo ${{ needs.callwf-windows-cache.outputs.restore-key }}
           echo 2-cron-workflow-created
-          echo ${{ runner.os }}-all-${{ hashFiles('urls.txt') }}
-          echo 3-other-latest-cache-pattern-start-with
-          echo ${{ runner.os }}-runid_
+          echo ${{ env.default-key }}
+          echo 3-other-latest-caches-pattern-start-with
+          echo ${{ env.exist-cache-key-pattern }}
           echo +++
+        env:
+          default-key: ${{ runner.os }}-all-${{ hashFiles('urls.txt') }}
+          exist-cache-key-pattern: ${{ runner.os }}-runid_
 
       - name: Restore cache
         id: restore_cache
