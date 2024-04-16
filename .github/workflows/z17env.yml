@@ -2,6 +2,7 @@ name: env ref
 on:
   workflow_dispatch:
   push:
+    branches: ['**']
 
 
 jobs:
