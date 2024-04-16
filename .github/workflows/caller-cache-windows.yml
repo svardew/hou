@@ -151,7 +151,7 @@ jobs:
         with:
           path: downloads
           # key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('urls.txt') }}
-          key: $restore-key
+          key: ${{ env.restore-key }}
           restore-keys: |
             ${{ runner.os }}-all-${{ hashFiles('urls.txt') }}
             ${{ runner.os }}-runid_
