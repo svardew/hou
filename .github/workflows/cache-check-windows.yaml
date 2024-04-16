@@ -6,7 +6,10 @@ on:
     inputs:
       runid:
         required: true
-        type: string
+        type: string #?numeric? caller github.run_id, use as cache suffix
+      caller_os:
+        required: true
+        type: string # caller runner.os (Windows), use as cache prefix
     outputs:
       restore-key:
         description: "use this KEY for cache, Windows-{arch}-KEY"
@@ -76,15 +79,15 @@ jobs:
           echo "WINPTY_FILE=$f" >> $GITHUB_OUTPUT
           # checksum
           touch MD5SUMS
-          cat <<EOM > MD5SUMS
+          cat <<LINES > MD5SUMS
           25b07e2b5177a2f071f109f641f9e3e4  lua-5.4.2_Win32_dllw6_lib.zip
           132834e89206d893630410fa2192bd2a  lua-5.4.2_Win64_dllw6_lib.zip
           a0f941c53b8e509712eeca46104674c4  winpty-0.4.3-msvc2015.zip
           113f036c91f06a9fdb11186e3dce7d93  libsodium-1.0.19-stable-msvc.zip
           8867b0380daabd12ece3dbad73197e78  libsodium-1.0.19-stable-mingw.tar.gz
-          EOM
+          LINES
 
-      - name: Key file (list of download URLs)
+      - name: Key file (list of download URLs), cache dir
         run: |
           touch urls.txt
           echo ${{ env.LUA_RELEASE }} >> urls.txt
@@ -98,10 +101,10 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: downloads
-          key: ${{ runner.os }}-runid_${{ inputs.runid }}
+          key: ${{ inputs.caller_os }}-runid_${{ inputs.runid }}
           restore-keys: |
-            ${{ runner.os }}-${{ hashFiles('urls.txt') }}
-            ${{ runner.os }}-runid_
+            ${{ inputs.caller_os }}-all-${{ hashFiles('urls.txt') }}
+            ${{ inputs.caller_os }}-runid_
 
       - name: Verify cache
         id: verifycache
@@ -128,10 +131,10 @@ jobs:
         run: |
           test -d downloads || mkdir downloads
           dlf2 () {
-            if [ -f downloads/$2 ]; then
-              echo Skip Downlaod. $2
-            else
+            if [ ! -f "downloads/$2" ]; then
               wget -nv --tries=2 --waitretry=10 -O ./downloads/$2 $1
+            else
+              echo Skip Downlaod. $2
             fi
           }
           dlf2 ${{ steps.init.outputs.LUA32_URL }}        ${{ steps.init.outputs.LUA32_FILE }}
@@ -160,7 +163,7 @@ jobs:
             echo "KEY=$savenewcachekey" >> $GITHUB_OUTPUT
           fi
         env:
-          savenewcachekey: ${{ runner.os }}-runid_${{ github.run_id }}
+          savenewcachekey: ${{ inputs.caller_os }}-runid_${{ inputs.runid }}
 
       - name: Save cache
         if: ${{ steps.verifydownloads.outputs.FLAG == 'valid' }}
@@ -180,8 +183,8 @@ jobs:
           fi
         env:
           restorecacheflag: ${{ steps.verifycache.outputs.FLAG }}
-          savenewcacheflag: ${{ steps.verifydownloads.outputs.FLAG }}
           restorecache_key: ${{ steps.verifycache.outputs.KEY }}
+          savenewcacheflag: ${{ steps.verifydownloads.outputs.FLAG }}
           savenewcache_key: ${{ steps.verifydownloads.outputs.KEY }}
 
 
