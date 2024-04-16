@@ -6,15 +6,13 @@ on:
 
 
 jobs:
-  ee:
+  exoe:
     runs-on: ubuntu-latest
     env:
-      url: https://0.0.0.0/${{ env.Foo }}/
       Foo: pages
     steps:
       - name: echox
         run: |
           echo tgtt
-          echo $Foo
 
         
