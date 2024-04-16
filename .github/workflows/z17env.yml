@@ -15,7 +15,7 @@ jobs:
       - name: echox
         run: |
           echo tgtt
-          echo ${{ env.Foo }
-          echo $Url
+          echo ${{ env.Foo }}
+          echo ${{ env.Url }}
 
         
