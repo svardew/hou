@@ -135,7 +135,7 @@ jobs:
           echo %WINPTY_URL%>> urls.txt
           echo %SODIUM_VER%>> urls.txt
 
-      - name: Cache downloaded files
+      - name: Restore Cache downloaded files
         uses: actions/cache/restore@v4
         with:
           path: downloads
@@ -144,27 +144,19 @@ jobs:
       - name: Download dependencies
         shell: cmd
         run: |
-          path C:\Program Files\7-Zip;%path%
           if not exist downloads mkdir downloads
 
           echo %COL_GREEN%Download Lua%COL_RESET%
           call :downloadfile %LUA${{ env.BITS }}_URL% downloads\lua.zip
-          7z x downloads\lua.zip -o%LUA_DIR% > nul || exit 1
 
           echo %COL_GREEN%Download winpty%COL_RESET%
           call :downloadfile %WINPTY_URL% downloads\winpty.zip
-          7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
-          copy /Y D:\winpty\%WARCH%\bin\winpty.dll        src\winpty%BITS%.dll
-          copy /Y D:\winpty\%WARCH%\bin\winpty-agent.exe  src\
 
           echo %COL_GREEN%Download libsodium%COL_RESET%
           if "${{ matrix.toolchain }}"=="msvc" (
             call :downloadfile %SODIUM_MSVC_URL% downloads\libsodium.zip
-            7z x -y downloads\libsodium.zip -oD:\ > nul || exit 1
           ) else (
             call :downloadfile %SODIUM_MINGW_URL% downloads\libsodium.tar.gz
-            7z x -y downloads\libsodium.tar.gz -so | 7z x -si -ttar -oD:\ > nul || exit 1
-            mklink %SODIUM_LIB%\libsodium.dll %SODIUM_LIB%\libsodium-%SODIUM_MINGW_VER%.dll
           )
 
           goto :eof
@@ -173,12 +165,29 @@ jobs:
           :: call :downloadfile <URL> <localfile>
           if not exist %2 (
             curl -f -L %1 -o %2
+          ) else (
+            echo Skip %2
           )
           if ERRORLEVEL 1 (
             rem Retry once.
             curl -f -L %1 -o %2 || exit 1
           )
           goto :eof
+
+      - name: Install dependencies
+        shell: cmd
+        run: |
+          path C:\Program Files\7-Zip;%path%
+          7z x downloads\lua.zip -o%LUA_DIR% > nul || exit 1
+          7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
+          copy /Y D:\winpty\%WARCH%\bin\winpty.dll        src\winpty%BITS%.dll
+          copy /Y D:\winpty\%WARCH%\bin\winpty-agent.exe  src\
+          if "${{ matrix.toolchain }}"=="msvc" (
+            7z x -y downloads\libsodium.zip -oD:\ > nul || exit 1
+          ) else (
+            7z x -y downloads\libsodium.tar.gz -so | 7z x -si -ttar -oD:\ > nul || exit 1
+            mklink %SODIUM_LIB%\libsodium.dll %SODIUM_LIB%\libsodium-%SODIUM_MINGW_VER%.dll
+          )
 
       - name: Build (MSVC)
         if: matrix.toolchain == 'msvc'
