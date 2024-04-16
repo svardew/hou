@@ -14,9 +14,42 @@ permissions:
   contents: read # to fetch code (actions/checkout)
 
 jobs:
+  cache-windows:
+    runs-on: ubuntu-22.04
+    env:
+      # Lua
+      LUA_VER: 54
+      LUA_VER_DOT: '5.4'
+      LUA_RELEASE: '5.4.2'
+      LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
+      LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
+      # winpty
+      WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+      # libsodium
+      SODIUM_VER: '1.0.19'
+      SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
+      SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
+    steps:
+      - name: Init. keyfile, savedir, url, filename, checksum
+        run: true
+      - name: Restore cache
+        run: true
+      - name: Check cache
+        run: true
+      - name: Fetch missing dependencies
+        run: true
+      - name: Save cache x86
+        if: false
+        run: true
+      - name: Save cache x64
+        if: false
+        run: true
+      - name: Set job outputs restore-key-{x86,x64}
+        run: false
+
   windows:
     runs-on: windows-2022
-
+    needs: [cache-windows]
     env:
       # Interfaces
       # Lua
