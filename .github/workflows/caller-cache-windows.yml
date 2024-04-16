@@ -145,6 +145,18 @@ jobs:
           echo %LUA_RELEASE%>> urls.txt
           echo %WINPTY_URL%>> urls.txt
           echo %SODIUM_VER%>> urls.txt
+          echo current workflow run_id is
+          echo ${{ github.run_id }}
+          echo +++
+          echo list of restore key is
+          echo 1-from-called-workflow-checked
+          echo ${{ needs.callwf-windows-cache.outputs.restore-key }}
+          echo 2-cron-workflow-created
+          echo ${{ runner.os }}-all-${{ hashFiles('urls.txt') }}
+          echo 3-other-latest-cache-pattern-start-with
+          echo ${{ runner.os }}-runid_
+          echo +++
+
 
       - name: Restore cache downloaded files
         uses: actions/cache/restore@v4
