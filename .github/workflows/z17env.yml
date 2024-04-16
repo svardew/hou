@@ -1,4 +1,7 @@
 name: env ref
+on:
+  workflow_dispatch:
+
 jobs:
   ee:
     runs-on: ubuntu-latest
