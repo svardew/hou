@@ -15,11 +15,11 @@ on:
         description: "use this KEY for cache, Windows-{arch}-KEY"
         value: ${{ jobs.windows-cache.outputs.restore-key }}
 
-concurrency:
-  # The concurrency group contains the workflow name and the branch name for
-  # pull requests or the commit hash for any other events.
-  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
-  cancel-in-progress: true
+#--deadlock-same-concurrency-between-caller-n-called concurrency:
+#--deadlock-same-concurrency-between-caller-n-called   # The concurrency group contains the workflow name and the branch name for
+#--deadlock-same-concurrency-between-caller-n-called   # pull requests or the commit hash for any other events.
+#--deadlock-same-concurrency-between-caller-n-called   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+#--deadlock-same-concurrency-between-caller-n-called   cancel-in-progress: true
 
 permissions:
   contents: read # to fetch code (actions/checkout)
