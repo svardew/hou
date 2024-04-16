@@ -20,8 +20,10 @@ jobs:
     with:
       caller_os: Windows
       runid: ${{ github.run_id }}
-    secrets:
-      token: ${{ secrets.TOKEN }}
+    # secrets:
+      #-- https://docs.github.com/ja/actions/using-workflows
+      #-- /reusing-workflows#using-inputs-and-secrets-in-a-reusable-workflow
+      # token: ${{ secrets.TOKEN }}
 
   windows:
     runs-on: windows-2022
