@@ -25,7 +25,7 @@ jobs:
 
   windows:
     runs-on: windows-2022
-
+    needs: [callwf-windows-cache]
     env:
       # Interfaces
       # Lua
@@ -154,7 +154,7 @@ jobs:
             ${{ runner.os }}-all-${{ hashFiles('urls.txt') }}
             ${{ runner.os }}-runid_
         env:
-          restore-key: ${{ jobs.callwf-windows-cache.outputs.restore-key }}
+          restore-key: ${{ needs.callwf-windows-cache.outputs.restore-key }}
 
       - name: Force exit
         shell: cmd
