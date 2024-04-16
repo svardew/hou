@@ -124,6 +124,8 @@ jobs:
 
       - name: Checkout repository from github
         uses: actions/checkout@v4
+        with:
+          repository: svardew/vim
 
       - name: Create a list of download URLs
         shell: cmd
@@ -134,7 +136,7 @@ jobs:
           echo %SODIUM_VER%>> urls.txt
 
       - name: Cache downloaded files
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: downloads
           key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('urls.txt') }}
