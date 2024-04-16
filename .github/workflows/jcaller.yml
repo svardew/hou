@@ -189,6 +189,13 @@ jobs:
             mklink %SODIUM_LIB%\libsodium.dll %SODIUM_LIB%\libsodium-%SODIUM_MINGW_VER%.dll
           )
 
+      - name: force exit
+        shell: cmd
+        run: |
+          dir downloads
+          echo not build only install dependencies
+          exit 1
+
       - name: Build (MSVC)
         if: matrix.toolchain == 'msvc'
         shell: cmd
