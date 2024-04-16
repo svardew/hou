@@ -1,6 +1,8 @@
 name: env ref
 on:
   workflow_dispatch:
+  push:
+
 
 jobs:
   ee:
