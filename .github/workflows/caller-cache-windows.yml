@@ -18,7 +18,7 @@ jobs:
     uses: ./.github/workflows/cache-check-windows.yaml
     # 5da4e11405935a3a0ad3e312e6f48b2d6dc3c360
     with:
-      cache-prefix: ${{ runner.os }}
+      cache-prefix: ${{ jobs.windows.runner.os }}
       runid: ${{ github.run_id }}
     secrets:
       token: ${{ secrets.TOKEN }}
@@ -149,10 +149,12 @@ jobs:
         with:
           path: downloads
           # key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('urls.txt') }}
-          key: ${{ jobs.callwf-windows-cache.outputs.restore-key }}
+          key: $restore-key
           restore-keys: |
             ${{ runner.os }}-all-${{ hashFiles('urls.txt') }}
             ${{ runner.os }}-runid_
+        env:
+          restore-key: ${{ jobs.callwf-windows-cache.outputs.restore-key }}
 
       - name: Force exit
         shell: cmd
