@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       Foo: pages
+      Url: file:///tmp/${{ env.Url }}
     steps:
       - name: echox
         run: |
