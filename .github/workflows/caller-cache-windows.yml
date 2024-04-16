@@ -157,19 +157,21 @@ jobs:
           echo ${{ runner.os }}-runid_
           echo +++
 
-
-      - name: Restore cache downloaded files
+      - name: Restore cache
+        id: restore_cache
         uses: actions/cache/restore@v4
         with:
           path: downloads
           enableCrossOsArchive: true
           # key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('urls.txt') }}
-          key: ${{ env.restore-key }}
+          key: ${{ env.this-workflow-runid-restore-key }}
           restore-keys: |
-            ${{ runner.os }}-all-${{ hashFiles('urls.txt') }}
-            ${{ runner.os }}-runid_
+            ${{ env.default-key }}
+            ${{ env.exist-cache-key-pattern }}
         env:
-          restore-key: ${{ needs.callwf-windows-cache.outputs.restore-key }}
+          this-workflow-runid-restore-key: ${{ needs.callwf-windows-cache.outputs.restore-key }}
+          default-key: ${{ runner.os }}-all-${{ hashFiles('urls.txt') }}
+          exist-cache-key-pattern: ${{ runner.os }}-runid_
 
       - name: Force exit
         shell: cmd
