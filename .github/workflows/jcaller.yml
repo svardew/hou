@@ -294,9 +294,8 @@ jobs:
           my_rename ${{ env.SODIUM_MSVC_URL }} libsodium.zip '\%SODIUM_VER\%' ${{ env.SODIUM_VER }}
           my_rename ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz '\%SODIUM_VER\%' ${{ env.SODIUM_VER }}
           cd ../
+          echo '/* files in downloads */'
           ls -lagG downloads
-          echo '/* Force exit */'
-          exit 1
 
       - name: Download dependencies
         shell: cmd
