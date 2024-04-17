@@ -116,7 +116,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: downloads
-          key: $restorekey
+          key: ${{ env.restorekey }}
           enableCrossOsArchive: true
         env:
           restorekey: ${{ steps.fetchfiles.outputs.KEY }}
