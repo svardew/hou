@@ -111,7 +111,7 @@ jobs:
           env:
             newcachekey: Windows-all-runid_${{ github.run_id }}
       - name: Save cache
-        id: ${{ steps.fetchfiles.conclusion == 'success' }}
+        if: ${{ steps.fetchfiles.conclusion == 'success' }}
         uses: actions/cache/save@v4
         with:
           path: downloads
