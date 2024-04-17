@@ -100,10 +100,10 @@ jobs:
             fi
           }
           wgettries2 ${{ env.LUA32_URL }}        ${{ env.LUA32_FILE }}
-          wgettrdlf2 ${{ env.LUA64_URL }}        ${{ env.LUA64_FILE }}
-          wgettrdlf2 ${{ env.WINPTY_URL }}       ${{ env.WINPTY_FILE }}
-          wgettrdlf2 ${{ env.SODIUM_MSVC_URL }}  ${{ env.SODIUM_MSVC_FILE }}
-          wgettrdlf2 ${{ env.SODIUM_MINGW_URL }} ${{ env.SODIUM_MINGW_FILE }}
+          wgettries2 ${{ env.LUA64_URL }}        ${{ env.LUA64_FILE }}
+          wgettries2 ${{ env.WINPTY_URL }}       ${{ env.WINPTY_FILE }}
+          wgettries2 ${{ env.SODIUM_MSVC_URL }}  ${{ env.SODIUM_MSVC_FILE }}
+          wgettries2 ${{ env.SODIUM_MINGW_URL }} ${{ env.SODIUM_MINGW_FILE }}
           ls -lagG downloads
           echo "KEY=$newcachekey" >> $GITHUB_OUTPUT
           echo "/* verify checksum */"
