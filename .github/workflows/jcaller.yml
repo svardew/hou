@@ -289,10 +289,10 @@ jobs:
             test -f $2 || mv -vn $orig $2
           }
           luaurl=${{ matrix.arch == 'x64' && env.LUA64_URL || env.LUA32_URL }}
-          my_rename $luaurl lua.zip '%LUA_RELEASE%' ${{ env.LUA_RELEASE }}
+          my_rename $luaurl lua.zip '\%LUA_RELEASE\%' ${{ env.LUA_RELEASE }}
           my_rename ${{ env.WINPTY_URL }} winpty.zip '#DUMMY' '#DUMMY'
-          my_rename ${{ env.SODIUM_MSVC_URL }} libsodium.zip '%SODIUM_VER%' ${{ env.SODIUM_VER }}
-          my_rename ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz '%SODIUM_VER%' ${{ env.SODIUM_VER }}
+          my_rename ${{ env.SODIUM_MSVC_URL }} libsodium.zip '\%SODIUM_VER\%' ${{ env.SODIUM_VER }}
+          my_rename ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz '\%SODIUM_VER\%' ${{ env.SODIUM_VER }}
           cd ../
           ls -lagG downloads
           echo '/* Force exit */'
