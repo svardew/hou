@@ -269,8 +269,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: downloads
+          enableCrossOsArchive: true
           key: ${{ env.verifiedkey }}
-          restore-key: |
+          restore-keys: |
             Windows-all-${{ hashFiles('urls.txt') }}
             Windows-all-runid_
         env:
@@ -280,17 +281,22 @@ jobs:
         shell: bash {0}
         run: |
           cd downloads
-          function gh_rename () {
-            s=$(basename $1)
-            test -f $2 || mv -vn $s $2
+          function my_rename () {
+            orig=$(basename $1)
+            pat=$3
+            str=$4
+            orig=${orig/$pat/$str}
+            test -f $2 || mv -vn $orig $2
           }
           luaurl=${{ matrix.arch == 'x64' && env.LUA64_URL || env.LUA32_URL }}
-          gh_rename $luaurl lua.zip
-          gh_rename ${{ env.WINPTY_URL }} winpty.zip
-          gh_rename ${{ env.SODIUM_MSVC_URL }} libsodium.zip
-          gh_rename ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz
+          my_rename $luaurl lua.zip '%LUA_RELEASE%' ${{ env.LUA_RELEASE }}
+          my_rename ${{ env.WINPTY_URL }} winpty.zip '#DUMMY' '#DUMMY'
+          my_rename ${{ env.SODIUM_MSVC_URL }} libsodium.zip '%SODIUM_VER%' ${{ env.SODIUM_VER }}
+          my_rename ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz '%SODIUM_VER%' ${{ env.SODIUM_VER }}
           cd ../
           ls -lagG downloads
+          echo '/* Force exit */'
+          exit 1
 
       - name: Download dependencies
         shell: cmd
