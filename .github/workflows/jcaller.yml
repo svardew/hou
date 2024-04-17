@@ -83,7 +83,7 @@ jobs:
             echo "KEY=" >> $GITHUB_OUTPUT
           else
             echo "/* cache status: valid */"
-            echo "KEY=$restorecache_matched_key" >> $GITHUB_OUTPUT
+            echo "KEY=${{ env.restorecache_matched_key }}" >> $GITHUB_OUTPUT
           fi
         env:
           restorecache_matched_key: ${{ steps.restorecache.outputs.cache-matched-key }}
@@ -105,7 +105,7 @@ jobs:
           wgettries2 ${{ env.SODIUM_MSVC_URL }}  ${{ env.SODIUM_MSVC_FILE }}
           wgettries2 ${{ env.SODIUM_MINGW_URL }} ${{ env.SODIUM_MINGW_FILE }}
           ls -lagG downloads
-          echo "KEY=$newcachekey" >> $GITHUB_OUTPUT
+          echo "KEY=${{ env.newcachekey }}" >> $GITHUB_OUTPUT
           echo "/* verify checksum */"
           cd downloads
           md5sum -c ../MD5SUMS
@@ -124,10 +124,10 @@ jobs:
         id: validkey
         run: |
           echo foo
-          if [ -n "$restoredcache_key" ]; then
-            echo "restore-key=$restoredcache_key" >> $GITHUB_OUTPUT
-          elif [ -n "$newcache_key" ]; then
-            echo "restore-key=$newcache_key" >> $GITHUB_OUTPUT
+          if [ -n "${{ env.restoredcache_key }}" ]; then
+            echo "restore-key=${{ env.restoredcache_key }}" >> $GITHUB_OUTPUT
+          elif [ -n "${{ env.newcache_key }}" ]; then
+            echo "restore-key=${{ env.newcache_key }}" >> $GITHUB_OUTPUT
           fi
         env:
           restoredcache_key: ${{ steps.checkcache.outputs.KEY }}
