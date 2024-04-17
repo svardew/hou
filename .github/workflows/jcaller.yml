@@ -263,14 +263,34 @@ jobs:
           echo %WINPTY_URL%>> urls.txt
           echo %SODIUM_VER%>> urls.txt
           echo next step restroe cache from ${{ needs.cache-windows.outputs.restore-key }}
-          echo Force exit
-          exit 1
 
       - name: Restore Cache downloaded files
+        id: restorecache
         uses: actions/cache/restore@v4
         with:
           path: downloads
-          key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('urls.txt') }}
+          key: ${{ env.verifiedkey }}
+          restore-key: |
+            Windows-all-${{ hashFiles('urls.txt') }}
+            Windows-all-runid_
+        env:
+          verifiedkey: ${{ needs.cache-windows.outputs.restore-key }}
+
+      - name: Rename cache files
+        shell: bash {0}
+        run: |
+          cd downloads
+          function gh_rename () {
+            s=$(basename $1)
+            test -f $2 || mv -vn $s $2
+          }
+          luaurl=${{ matrix.arch == 'x64' && env.LUA64_URL || env.LUA32_URL }}
+          gh_rename $luaurl lua.zip
+          gh_rename ${{ env.WINPTY_URL }} winpty.zip
+          gh_rename ${{ env.SODIUM_MSVC_URL }} libsodium.zip
+          gh_rename ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz
+          cd ../
+          ls -lagG downloads
 
       - name: Download dependencies
         shell: cmd
@@ -324,7 +344,11 @@ jobs:
         shell: cmd
         run: |
           dir downloads
-          echo not build only install dependencies
+          echo expect restore cache success
+          echo expect rename success
+          echo expect no download occur
+          echo expect install success
+          echo all matrix should no download
           exit 1
 
       - name: Build (MSVC)
