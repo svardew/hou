@@ -1,0 +1,21 @@
+name: env ref
+on:
+  workflow_dispatch:
+  push:
+    branches: ['**']
+
+
+jobs:
+  exoe:
+    runs-on: ubuntu-latest
+    env:
+      Foo: pages
+      Url: file:///tmp/$Foo
+    steps:
+      - name: echox
+        run: |
+          echo tgtt
+          echo ${{ env.Foo }}
+          echo ${{ env.Url }}
+
+        
