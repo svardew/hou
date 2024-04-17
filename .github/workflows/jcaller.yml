@@ -18,38 +18,132 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       # Lua
-      LUA_VER: 54
-      LUA_VER_DOT: '5.4'
       LUA_RELEASE: '5.4.2'
-      LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
-      LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
+      LUA32_FILE: lua-$LUA_RELEASE_Win32_dllw6_lib.zip
+      LUA64_FILE: lua-$LUA_RELEASE_Win64_dllw6_lib.zip
+      LUA32_URL: https://downloads.sourceforge.net/luabinaries/$LUA32_FILE
+      LUA64_URL: https://downloads.sourceforge.net/luabinaries/$LUA64_FILE
       # winpty
+      WINPTY_FILE: winpty-0.4.3-msvc2015.zip
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
       # libsodium
       SODIUM_VER: '1.0.19'
-      SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
-      SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
+      SODIUM_MSVC_FILE: libsodium-$SODIUM_VER-stable-msvc.zip
+      SODIUM_MINGW_FILE: libsodium-$SODIUM_VER-stable-mingw.tar.gz
+      SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/$SODIUM_MSVC_FILE
+      SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/$SODIUM_MINGW_FILE
+    outputs:
+      restore-key:
+        description: "use this KEY for cache, Windows-{arch}-KEY"
+        value: ${{ steps.validkey.outputs.restore-key }}
     steps:
-      - name: Init. keyfile, savedir, url, filename, checksum
-        run: true
+      - name: Init. keyfile, savedir, checksum
+        run: |
+          # Create a list of download URLs
+          touch urls.txt
+          truncate --size 0 urls.txt
+          echo $LUA_RELEASE >> urls.txt
+          echo $WINPTY_URL >> urls.txt
+          echo $SODIUM_VER >> urls.txt
+          sed -i 's/$/\r/g' urls.txt
+          file urls.txt
+          test -d downloads || mkdir downloads
+          cat <<LINES > MD5SUMS
+          25b07e2b5177a2f071f109f641f9e3e4  $LUA32_FILE
+          132834e89206d893630410fa2192bd2a  $LUA64_FILE
+          a0f941c53b8e509712eeca46104674c4  $WINPTY_FILE
+          113f036c91f06a9fdb11186e3dce7d93  $SODIUM_MSVC_FILE
+          8867b0380daabd12ece3dbad73197e78  $SODIUM_MINGW_FILE
+          LINES
       - name: Restore cache
-        run: true
+        id: restorecache
+        uses: actions/cache/restore@v4
+        with:
+          path: downloads
+          enableCrossOsArchive: true
+          # restore from default cache, or latest other user saved cache.
+          # - Windows-all-${{ hashFile('urls.txt') }}
+          # - Windows-all-runid_0011223399
+          # fetch and save cache if restored files are not valid
+          # saved cache is used jobs.windows, and reused by other user.
+          # this saved cache live 7 days.
+          # - Windows-all-runid_${{ github.run_id }}
+          key: Windows-all-runid_${{ github.run_id }}
+          restore-keys: |
+            Windows-all-${{ hashFiles('urls.txt') }}
+            Windows-all-runid_
       - name: Check cache
-        run: true
+        id: checkcache
+        continue-on-error: true
+        shell: bash {0}
+        run: |
+          cd downloads
+          md5sum -c ../MD5SUMS
+          if [ $? -gt 0 ]; then
+            echo "/* cache status: invalid */"
+            echo "KEY=" >> $GITHUB_OUTPUT
+          else
+            echo "/* cache status: valid */"
+            echo "KEY=$restorecache_matched_key" >> $GITHUB_OUTPUT
+          fi
+        env:
+          restorecache_matched_key: ${{ steps.restorecache.outputs.cache-matched-key }}
       - name: Fetch missing dependencies
-        run: true
-      - name: Save cache x86
-        if: false
-        run: true
-      - name: Save cache x64
-        if: false
-        run: true
-      - name: Set job outputs restore-key-{x86,x64}
-        run: false
+        id: fetchfiles
+        if: ${{ ! contains(steps.checkcache.outputs.KEY, '-') }}
+        run: |
+          test -d downloads || mkdir downloads
+          wgettries2 () {
+            if [ ! -f "downloads/$2" ]; then
+              wget -nv --tries=2 --waitretry=10 -O ./downloads/$2 $1
+            else
+              echo Skip Downlaod. $2
+            fi
+          }
+          wgettries2 ${{ env.LUA32_URL }}        ${{ env.LUA32_FILE }}
+          wgettrdlf2 ${{ env.LUA64_URL }}        ${{ env.LUA64_FILE }}
+          wgettrdlf2 ${{ env.WINPTY_URL }}       ${{ env.WINPTY_FILE }}
+          wgettrdlf2 ${{ env.SODIUM_MSVC_URL }}  ${{ env.SODIUM_MSVC_FILE }}
+          wgettrdlf2 ${{ env.SODIUM_MINGW_URL }} ${{ env.SODIUM_MINGW_FILE }}
+          ls -lagG downloads
+          echo "KEY=$newcachekey" >> $GITHUB_OUTPUT
+          echo "/* verify checksum */"
+          cd downloads
+          md5sum -c ../MD5SUMS
+          env:
+            newcachekey: Windows-all-runid_${{ github.run_id }}
+      - name: Save cache
+        id: ${{ steps.fetchfiles.conclusion == 'success' }}
+        uses: actions/cache/save@v4
+        with:
+          path: downloads
+          key: ${{ steps.fetchfiles.outputs.KEY }}
+          enableCrossOsArchive: true
+      - name: Set job outputs restore-key
+        id: validkey
+        run: |
+          echo foo
+          if [ -n "$restoredcache_key" ]; then
+            echo "restore-key=$restoredcache_key" >> $GITHUB_OUTPUT
+          elif [ -n "$newcache_key" ]; then
+            echo "restore-key=$newcache_key" >> $GITHUB_OUTPUT
+          fi
+        env:
+          restoredcache_key: ${{ steps.checkcache.outputs.KEY }}
+          newcache_key: ${{ steps.fetchfiles.outputs.KEY }}
+      - name: report
+        run: |
+          echo "jobs.windows use this restore-key"
+          echo ${{ steps.validkey.outputs.restore-key }}
+          echo "/* repository caches */"
+          echo "default:" Windows-all-${{ hashFiles('urls.txt') }}
+          echo "restored:" ${{ steps.restorecache.outputs.cache-matched-key }}
+          echo "new saved:" ${{ steps.fetchfiles.outputs.KEY }}
 
   windows:
     runs-on: windows-2022
-    needs: [cache-windows]
+    needs: [cache-windows] # ${{ needs.cache-windows.outputs.restore-key }}
+    if: false
     env:
       # Interfaces
       # Lua
