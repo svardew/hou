@@ -144,7 +144,7 @@ jobs:
   windows:
     runs-on: windows-2022
     needs: [cache-windows] # ${{ needs.cache-windows.outputs.restore-key }}
-    if: false
+    if: true
     env:
       # Interfaces
       # Lua
@@ -262,6 +262,9 @@ jobs:
           echo %LUA_RELEASE%>> urls.txt
           echo %WINPTY_URL%>> urls.txt
           echo %SODIUM_VER%>> urls.txt
+          echo next step restroe cache from ${{ needs.cache-windows.outputs.restore-key }}
+          echo Force exit
+          exit 1
 
       - name: Restore Cache downloaded files
         uses: actions/cache/restore@v4
