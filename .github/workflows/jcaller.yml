@@ -427,14 +427,6 @@ jobs:
             src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
           )
 
-      - name: force exit
-        shell: cmd
-        run: |
-          echo steps install is ok
-          echo try build msvc and mingw
-          echo expect steps check version success
-          exit 1
-
       #- name: Prepare Artifact
       #  shell: cmd
       #  run: |
@@ -482,6 +474,13 @@ jobs:
             @rem Run only tiny tests.
             nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\vim  || exit 1
           )
+
+      - name: force exit
+        shell: cmd
+        run: |
+          echo matrix build and show version seems ok
+          echo try test
+          exit 1
 
       - name: Generate gcov files
         if: matrix.coverage
