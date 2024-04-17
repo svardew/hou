@@ -109,8 +109,8 @@ jobs:
           echo "/* verify checksum */"
           cd downloads
           md5sum -c ../MD5SUMS
-          env:
-            newcachekey: Windows-all-runid_${{ github.run_id }}
+        env:
+          newcachekey: Windows-all-runid_${{ github.run_id }}
       - name: Save cache
         if: ${{ steps.fetchfiles.conclusion == 'success' }}
         uses: actions/cache/save@v4
