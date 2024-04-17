@@ -33,9 +33,7 @@ jobs:
       SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/$SODIUM_MSVC_FILE
       SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/$SODIUM_MINGW_FILE
     outputs:
-      restore-key:
-        description: "use this KEY for cache, Windows-{arch}-KEY"
-        value: ${{ steps.validkey.outputs.restore-key }}
+      restore-key: ${{ steps.validkey.outputs.restore-key }}
     steps:
       - name: Init. keyfile, savedir, checksum
         run: |
