@@ -345,16 +345,6 @@ jobs:
             mklink %SODIUM_LIB%\libsodium.dll %SODIUM_LIB%\libsodium-%SODIUM_MINGW_VER%.dll
           )
 
-      - name: force exit
-        shell: cmd
-        run: |
-          dir downloads
-          echo expect restore cache success
-          echo expect rename success
-          echo expect no download occur
-          echo expect install success
-          echo all matrix should no download
-          exit 1
 
       - name: Build (MSVC)
         if: matrix.toolchain == 'msvc'
@@ -436,6 +426,14 @@ jobs:
             src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
             src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
           )
+
+      - name: force exit
+        shell: cmd
+        run: |
+          echo steps install is ok
+          echo try build msvc and mingw
+          echo expect steps check version success
+          exit 1
 
       #- name: Prepare Artifact
       #  shell: cmd
