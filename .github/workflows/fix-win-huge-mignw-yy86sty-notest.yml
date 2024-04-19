@@ -254,11 +254,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: svardew/vim
-          ref: c207fd2535717030d78f9b92839e5f2ac004cc78
+          # ref: c207fd2535717030d78f9b92839e5f2ac004cc78
           # ^^ patch 9.0.0002 2022-06-09
           # ref: 592f57f5fec1064cc276a0d7992cc543bed04fd5
           # ^^ patch 8.2.2630 2021-03-20
-          # ref: 5bc13453b2dd8067597793e32c4f94aa3031054a
+          ref: 5bc13453b2dd8067597793e32c4f94aa3031054a
           # ^^ patch 9.0.0421 2022-09-09
 
       - name: Create a list of download URLs
