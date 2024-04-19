@@ -182,14 +182,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64, python3: stable }
+          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64, python3: stable }
           - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x86, python3: stable, coverage: yes }
-          # { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: yes, arch: x86 }
-          # { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: no,  arch: x64, coverage: yes }
-          # { features: NORMAL, toolchain: msvc,  VIMDLL: yes, GUI: no,  arch: x86 }
-          # { features: NORMAL, toolchain: mingw, VIMDLL: no,  GUI: yes, arch: x64 }
-          # { features: TINY,   toolchain: msvc,  VIMDLL: yes, GUI: yes, arch: x64 }
-          # { features: TINY,   toolchain: mingw, VIMDLL: no,  GUI: no,  arch: x86 }
+          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: yes, arch: x86 }
+          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: no,  arch: x64, coverage: yes }
+          - { features: NORMAL, toolchain: msvc,  VIMDLL: yes, GUI: no,  arch: x86 }
+          - { features: NORMAL, toolchain: mingw, VIMDLL: no,  GUI: yes, arch: x64 }
+          - { features: TINY,   toolchain: msvc,  VIMDLL: yes, GUI: yes, arch: x64 }
+          - { features: TINY,   toolchain: mingw, VIMDLL: no,  GUI: no,  arch: x86 }
 
     steps:
       - name: Initialize
@@ -471,6 +471,8 @@ jobs:
           sed -i '/else\ (\ move/ s,$,\n\tdir,' src/testdir/Make_mvc.mak
           echo 'patch: summarize.vim writefile() needs append flag'
           sed -i '/writefile(/ s:):, "a"): ' src/testdir/summarize.vim
+          echo 'patch: explicitly repotr tinytests result'
+          sed -i '/echo\ No\ failures\ reported/ s:reported:reported #tinytests: ' src/testdir/Make_mvc.mak
 
       - name: Test and show the result of testing Vim
         if: matrix.GUI == 'no' || matrix.VIMDLL == 'yes'
