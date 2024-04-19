@@ -469,6 +469,8 @@ jobs:
         run: |
           echo 'patch: each oldstyle testing vim, show current dir files'
           sed -i '/else\ (\ move/ s,$,\n\tdir,' src/testdir/Make_mvc.mak
+          echo 'patch: summarize.vim writefile() needs append flag'
+          sed -i '/writefile(/ s:):, "a"): ' src/testdir/summarize.vim
 
       - name: Test and show the result of testing Vim
         if: matrix.GUI == 'no' || matrix.VIMDLL == 'yes'
