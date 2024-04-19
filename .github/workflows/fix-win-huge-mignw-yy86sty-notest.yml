@@ -463,6 +463,13 @@ jobs:
             nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\gvim  || exit 1
           )
 
+      - name: __modify_file_ Make_mvc.mak
+        if: matrix.GUI == 'no' || matrix.VIMDLL == 'yes'
+        shell: bash
+        run: |
+          echo 'patch: each oldstyle testing vim, show current dir files'
+          sed -i '/else\ (\ move/ s,$,\n\tdir,' src/testdir/Make_mvc.mak
+
       - name: Test and show the result of testing Vim
         if: matrix.GUI == 'no' || matrix.VIMDLL == 'yes'
         shell: cmd
