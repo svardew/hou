@@ -67,16 +67,14 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           enableCrossOsArchive: true
-          path: |
-            downloads
-            cache-x86
+          path: downloads
           key: Windows-x86-${{ hashFiles('urls.txt') }}
       - name: Verify cache Windows-x86
         id: verifycache86
         continue-on-error: true
         shell: bash {0}
         run: |
-          find downloads -type f -exec rm \{\} \+
+          find downloads -type f -exec mv \{\} ./cache-x86 \;
           cd cache-x86
           md5sum -c ../MD5SUMS-x86
           if [ $? -gt 0 ]; then
@@ -106,16 +104,14 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           enableCrossOsArchive: true
-          path: |
-            downloads
-            cache-x64
+          path: downloads
           key: Windows-x64-${{ hashFiles('urls.txt') }}
       - name: Verify cache Windows-x64
         id: verifycache64
         continue-on-error: true
         shell: bash {0}
         run: |
-          find downloads -type f -exec rm \{\} \+
+          find downloads -type f -exec mv \{\} ./cache-x64 \;
           cd cache-x64
           md5sum -c ../MD5SUMS-x64
           if [ $? -gt 0 ]; then
