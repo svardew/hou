@@ -164,8 +164,13 @@ jobs:
       - name: delete repository cache
         if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
         run: |
-          gh actions-cache delete Windows-x86-${{ hashFiles('urls.txt') }} -R ${{ env.REPO }} --confirm
+          c=$(gh actions-cache list -R $REPO | grep -c -F " $KEY ")
+          if [ $c -gt 0 ];then
+            echo "repsitory cache exist. delete cache" $KEY
+            gh actions-cache delete $KEY -R $REPO --confirm
+          fi
         env:
+          KEY: Windows-x86-${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: save cache
@@ -189,8 +194,13 @@ jobs:
       - name: delete repository cache
         if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
         run: |
-          gh actions-cache delete Windows-x64-${{ hashFiles('urls.txt') }} -R $REPO --confirm
+          c=$(gh actions-cache list -R $REPO | grep -c -F " $KEY ")
+          if [ $c -gt 0 ];then
+            echo "repository cache exist. delete cache" $KEY
+            gh actions-cache delete $KEY -R $REPO --confirm
+          fi
         env:
+          KEY: Windows-x64-${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: save cache
