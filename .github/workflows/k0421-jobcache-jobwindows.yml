@@ -78,10 +78,10 @@ jobs:
             fi
           }
           cd cache-x86
-          dlf2 ${{ env.URL_LUA32 }}        lua.zip
-          dlf2 ${{ env.URL_WINPTY }}       winpty.zip
-          dlf2 ${{ env.URL_SODIUM_MSVC }}  libsodium.zip
-          dlf2 ${{ env.URL_SODIUM_MINGW }} libsodium.tar.gz # }}}
+          dlf2 ${{ env.LUA32_URL }}        lua.zip
+          dlf2 ${{ env.WINPTY_URL }}       winpty.zip
+          dlf2 ${{ env.SODIUM_MSVC_URL }}  libsodium.zip
+          dlf2 ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz # }}}
 
       - name: Windows-x64 pt.1
         # restore, verify, download,{{{
@@ -121,10 +121,10 @@ jobs:
             fi
           }
           cd cache-x64
-          dlf2 ${{ env.URL_LUA64 }}        lua.zip
-          dlf2 ${{ env.URL_WINPTY }}       winpty.zip
-          dlf2 ${{ env.URL_SODIUM_MSVC }}  libsodium.zip
-          dlf2 ${{ env.URL_SODIUM_MINGW }} libsodium.tar.gz # }}}
+          dlf2 ${{ env.LUA64_URL }}        lua.zip
+          dlf2 ${{ env.WINPTY_URL }}       winpty.zip
+          dlf2 ${{ env.SODIUM_MSVC_URL }}  libsodium.zip
+          dlf2 ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz # }}}
 
       - name: List cache
         run: |
