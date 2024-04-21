@@ -13,9 +13,11 @@ jobs:
   windows-force-update:
     runs-on: ubuntu-latest
     env:
+      LUA_RELEASE: '5.4.2'
       LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-5.4.2_Win32_dllw6_lib.zip
       LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-5.4.2_Win64_dllw6_lib.zip
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+      SODIUM_VER: '1.0.19'
       SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.19-stable-msvc.zip
       SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.19-stable-mingw.tar.gz
     steps:
@@ -81,7 +83,10 @@ jobs:
           dlf2 ${{ env.LUA32_URL }}        lua.zip
           dlf2 ${{ env.WINPTY_URL }}       winpty.zip
           dlf2 ${{ env.SODIUM_MSVC_URL }}  libsodium.zip
-          dlf2 ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz # }}}
+          dlf2 ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz
+          echo '---'
+          ls . -1
+          md5sum -c ../MD5SUMS-x86 # }}}
 
       - name: Windows-x64 pt.1
         # restore, verify, download,{{{
@@ -124,7 +129,10 @@ jobs:
           dlf2 ${{ env.LUA64_URL }}        lua.zip
           dlf2 ${{ env.WINPTY_URL }}       winpty.zip
           dlf2 ${{ env.SODIUM_MSVC_URL }}  libsodium.zip
-          dlf2 ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz # }}}
+          dlf2 ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz
+          echo '---'
+          ls . -1
+          md5sum -c ../MD5SUMS-x64 # }}}
 
       - name: List cache
         run: |
