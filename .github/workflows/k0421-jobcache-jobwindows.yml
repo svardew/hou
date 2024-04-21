@@ -164,10 +164,10 @@ jobs:
       - name: delete repository cache
         if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
         run: |
-          c=$(gh actions-cache list -R $REPO | grep -c -F " $KEY ")
+          c=$(gh actions-cache list -R ${{ env.REPO }} | grep -c -F " ${{ env.KEY }} ")
           if [ $c -gt 0 ];then
-            echo "repsitory cache exist. delete cache" $KEY
-            gh actions-cache delete $KEY -R $REPO --confirm
+            echo "repository cache exist. delete cache" $KEY
+            gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
           fi
         env:
           KEY: Windows-x86-${{ hashFiles('urls.txt') }}
