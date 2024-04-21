@@ -131,7 +131,7 @@ jobs:
           gh extension install actions/gh-actions-cache
           echo "/* List of repository cache key */"
           cacheKeys=$(gh actions-cache list -R $REPO -L 100 | cut -f 1 )
-          cat cacheKeys
+          echo cacheKeys
           echo "/* Local files: downloads, cache-x86, cache-x64 */"
           echo '--- 'downloads && ls -1 downloads
           echo '--- 'cache-x86 && ls -1 cache-x86
