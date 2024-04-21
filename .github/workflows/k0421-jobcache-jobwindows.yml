@@ -293,8 +293,6 @@ jobs:
             cd ../
           fi
 
-        if: ${{ steps.verifycache.x86cache == 'invalid' || steps.verifycache.x64cache == 'invalid' }}
-
       - name: Prepare dependencies Windows-x86
         if: ${{ steps.verifycache.x86cache == 'invalid' }}
         run: |
