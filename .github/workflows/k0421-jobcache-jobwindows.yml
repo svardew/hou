@@ -63,18 +63,19 @@ jobs:
       - name: gh-actions-cache
         run: |
           gh extension install actions/gh-actions-cache
-          c=$(gh actions-cache list -R ${{ env.REPO }} |cut -f2| grep -c -E "^${{ env.KEY }}$")
-          echo "//" $(gh actions-cache list -R ${{ env.REPO }} |cut -f2)
-          echo "//" $c
+          c=$(gh actions-cache list -R ${{ env.REPO }} |cut -f2| grep -c -E '^${{ env.KEY }}$')
+          echo $(gh actions-cache list -R ${{ env.REPO }} |cut -f2)
+          echo $c
           if [ $c -gt 0 ];then
-            echo "repository cache exist. delete cache" $KEY
+            echo "repository cache exist. delete cache" ${{ env.KEY }}
             gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
           fi
-          exit 1
         env:
           KEY: Windows-x86-${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Force exit
+        run: exit 1
 
 
 
