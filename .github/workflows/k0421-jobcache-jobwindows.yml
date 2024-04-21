@@ -21,6 +21,10 @@ jobs:
       SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.19-stable-msvc.zip
       SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.19-stable-mingw.tar.gz
     steps:
+      - name: Checkout repository from github
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/vim
       - name: init
         run: |
           test -d downloads || mkdir downloads
@@ -197,6 +201,9 @@ jobs:
         env:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # }}}
+      # - name: memo
+        # run: exit 0
+
 
   windows:
     if: false
