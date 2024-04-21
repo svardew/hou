@@ -48,7 +48,7 @@ jobs:
           LINES
       - name: Key file (list of download URLs)
         run: |
-          touch urls.txt
+          touch urls.txt && truncate --size 0 urls.txt
           echo ${{ env.LUA_RELEASE }} >> urls.txt
           echo ${{ env.WINPTY_URL }}  >> urls.txt
           echo ${{ env.SODIUM_VER }}  >> urls.txt
@@ -71,12 +71,6 @@ jobs:
         shell: bash {0}
         run: |
           find downloads -type f -exec rm \{\} \+
-          cp MD5SUMS{,-x86}
-          sed -i '/lua-5.4.2-Win64/ s:^:# : ;' MD5SUMS-x86
-          sed -i '/lua-5.4.2-Win32/ s:lua.*lib.zip$:lua.zip: ;' MD5SUMS-x86
-          sed -i '/winpty-.*zip/ s:winpty.*zip$:winpty.zip: ;' MD5SUMS-x86
-          sed -i '/libsodium.*zip$/ s:libsodium.*zip$:libsodium.zip: ;' MD5SUMS-x86
-          sed -i '/libsodium.*.tar.gz$/ s:libsodium.*tar.gz$:libsodium.tar.gz: ;' MD5SUMS-x86
           cd cache-x86
           md5sum -c ../MD5SUMS-x86
           if [ $? -gt 0 ]; then
@@ -145,6 +139,7 @@ jobs:
           echo "/* List of repository cache key */"
           cacheKeys=$(gh actions-cache list -R $REPO -L 100 | cut -f 1 )
           echo "$cacheKeys"
+
           echo "/* Local files: downloads, cache-x86, cache-x64 */"
           echo '--- 'downloads && ls -lagG downloads
           echo '--- 'cache-x86 && ls -lagG cache-x86
