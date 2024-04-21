@@ -61,6 +61,7 @@ jobs:
           sed -i 's/$/\r/g' urls.txt
 
       - name: gh-actions-cache
+        shell: bash {0}
         run: |
           gh extension install actions/gh-actions-cache
           c=$(gh actions-cache list -R ${{ env.REPO }} |cut -f2| grep -c -E '^${{ env.KEY }}$')
