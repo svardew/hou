@@ -7,11 +7,13 @@ on:
 
 permissions:
   contents: read # to fetch code (actions/checkout)
-  actions: write # delete repository cache
 
 jobs:
   windows-force-update:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
     env:
       LUA_RELEASE: '5.4.2'
       LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-5.4.2_Win32_dllw6_lib.zip
@@ -165,7 +167,7 @@ jobs:
           gh actions-cache delete Windows-x86-${{ hashFiles('urls.txt') }} --confirm
         env:
           REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: save cache
         if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
         uses: actions/cache/save@v4
@@ -175,7 +177,7 @@ jobs:
           key: Windows-x86-${{ hashFiles('urls.txt') }}
         env:
           REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # }}}
+          # GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # }}}
       - name: Windows-x64 pt.2
         # prepare deps in downloads, delete repository cache, save cache {{{
         run: exit 0
@@ -190,7 +192,7 @@ jobs:
           gh actions-cache delete Windows-x64-${{ hashFiles('urls.txt') }} --confirm
         env:
           REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: save cache
         if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
         uses: actions/cache/save@v4
@@ -200,9 +202,11 @@ jobs:
           key: Windows-x64-${{ hashFiles('urls.txt') }}
         env:
           REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # }}}
-      # - name: memo
-        # run: exit 0
+          # GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # }}}
+      - name: memo
+        run: |
+          # momorize
+          exit 0
 
 
   windows:
