@@ -61,10 +61,10 @@ jobs:
           find downloads -type f -exec rm \{\} \+
           cp MD5SUMS{,-x86}
           sed -i '/lua-5.4.2-Win64/ s:^:# : ;' MD5SUMS-x86
-          sed -i '/lua-5.4.2-Win32/ s:lua-*lib.zip$:lua.zip: ;' MD5SUMS-x86
-          sed -i '/winpty-.*zip/ s:winpty-.*zip$:winpty.zip: ;' MD5SUMS-x86
-          sed -i '/libsodium.*zip$/ s:libsodium-*:libsodium.zip: ;' MD5SUMS-x86
-          sed -i '/libsodium.*.tar.gz$/ s:libsodium-*:libsodium.tar.gz: ;' MD5SUMS-x86
+          sed -i '/lua-5.4.2-Win32/ s:lua.*lib.zip$:lua.zip: ;' MD5SUMS-x86
+          sed -i '/winpty-.*zip/ s:winpty.*zip$:winpty.zip: ;' MD5SUMS-x86
+          sed -i '/libsodium.*zip$/ s:libsodium.*zip$:libsodium.zip: ;' MD5SUMS-x86
+          sed -i '/libsodium.*.tar.gz$/ s:libsodium.*tar.gz$:libsodium.tar.gz: ;' MD5SUMS-x86
           cd cache-x86
           md5sum -c ../MD5SUMS-x86
           if [ $? -gt 0 ]; then
@@ -107,10 +107,10 @@ jobs:
           find downloads -type f -exec rm \{\} \+
           cp MD5SUMS{,-x64}
           sed -i '/lua-5.4.2-Win32/ s:^:# : ;' MD5SUMS-x64
-          sed -i '/lua-5.4.2-Win64/ s:lua-*lib.zip$:lua.zip: ;' MD5SUMS-x64
-          sed -i '/winpty-.*zip/ s:winpty-.*zip$:winpty.zip: ;' MD5SUMS-x64
-          sed -i '/libsodium.*zip$/ s:libsodium-*:libsodium.zip: ;' MD5SUMS-x64
-          sed -i '/libsodium.*.tar.gz$/ s:libsodium-*:libsodium.tar.gz: ;' MD5SUMS-x64
+          sed -i '/lua-5.4.2-Win64/ s:lua.*lib.zip$:lua.zip: ;' MD5SUMS-x64
+          sed -i '/winpty-.*zip/ s:winpty.*zip$:winpty.zip: ;' MD5SUMS-x64
+          sed -i '/libsodium.*zip$/ s:libsodium.*zip$:libsodium.zip: ;' MD5SUMS-x64
+          sed -i '/libsodium.*.tar.gz$/ s:libsodium.*tar.gz$:libsodium.tar.gz: ;' MD5SUMS-x64
           cd cache-x64
           md5sum -c ../MD5SUMS-x64
           if [ $? -gt 0 ]; then
