@@ -23,9 +23,9 @@ jobs:
     steps:
       - name: init
         run: |
+          test -d downloads || mkdir downloads
           test -d cache-x86 || mkdir cache-x86
           test -d cache-x64 || mkdir cache-x64
-          test -d downloads || mkdir downloads
           touch MD5SUMS
           cat <<LINES > MD5SUMS
           25b07e2b5177a2f071f109f641f9e3e4  lua-5.4.2_Win32_dllw6_lib.zip
@@ -33,6 +33,18 @@ jobs:
           a0f941c53b8e509712eeca46104674c4  winpty-0.4.3-msvc2015.zip
           113f036c91f06a9fdb11186e3dce7d93  libsodium-1.0.19-stable-msvc.zip
           8867b0380daabd12ece3dbad73197e78  libsodium-1.0.19-stable-mingw.tar.gz
+          LINES
+          cat <<LINES > MD5SUMS-x86
+          25b07e2b5177a2f071f109f641f9e3e4  lua.zip
+          a0f941c53b8e509712eeca46104674c4  winpty.zip
+          113f036c91f06a9fdb11186e3dce7d93  libsodium.zip
+          8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
+          LINES
+          cat <<LINES > MD5SUMS-x64
+          132834e89206d893630410fa2192bd2a  lua.zip
+          a0f941c53b8e509712eeca46104674c4  winpty.zip
+          113f036c91f06a9fdb11186e3dce7d93  libsodium.zip
+          8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
           LINES
       - name: Key file (list of download URLs)
         run: |
@@ -43,7 +55,7 @@ jobs:
           sed -i 's/$/\r/g' urls.txt
 
       - name: Windows-x86 pt.1
-        # restore, verify, download, {{{
+        # restore, verify, download {{{
         run: exit 0
       - name: Restore Cache Windows-x86
         uses: actions/cache/restore@v4
@@ -87,9 +99,8 @@ jobs:
           echo '---'
           ls . -1
           md5sum -c ../MD5SUMS-x86 # }}}
-
       - name: Windows-x64 pt.1
-        # restore, verify, download,{{{
+        # restore, verify, download {{{
         run: exit 0
       - name: Restore Cache Windows-x64
         uses: actions/cache/restore@v4
@@ -105,12 +116,6 @@ jobs:
         shell: bash {0}
         run: |
           find downloads -type f -exec rm \{\} \+
-          cp MD5SUMS{,-x64}
-          sed -i '/lua-5.4.2-Win32/ s:^:# : ;' MD5SUMS-x64
-          sed -i '/lua-5.4.2-Win64/ s:lua.*lib.zip$:lua.zip: ;' MD5SUMS-x64
-          sed -i '/winpty-.*zip/ s:winpty.*zip$:winpty.zip: ;' MD5SUMS-x64
-          sed -i '/libsodium.*zip$/ s:libsodium.*zip$:libsodium.zip: ;' MD5SUMS-x64
-          sed -i '/libsodium.*.tar.gz$/ s:libsodium.*tar.gz$:libsodium.tar.gz: ;' MD5SUMS-x64
           cd cache-x64
           md5sum -c ../MD5SUMS-x64
           if [ $? -gt 0 ]; then
@@ -139,11 +144,11 @@ jobs:
           gh extension install actions/gh-actions-cache
           echo "/* List of repository cache key */"
           cacheKeys=$(gh actions-cache list -R $REPO -L 100 | cut -f 1 )
-          echo cacheKeys
+          echo "$cacheKeys"
           echo "/* Local files: downloads, cache-x86, cache-x64 */"
-          echo '--- 'downloads && ls -1 downloads
-          echo '--- 'cache-x86 && ls -1 cache-x86
-          echo '--- 'cache-x64 && ls -1 cache-x64
+          echo '--- 'downloads && ls -lagG downloads
+          echo '--- 'cache-x86 && ls -lagG cache-x86
+          echo '--- 'cache-x64 && ls -lagG cache-x64
         env:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
