@@ -139,7 +139,6 @@ jobs:
           echo "/* List of repository cache key */"
           cacheKeys=$(gh actions-cache list -R $REPO -L 100 | cut -f 1 )
           echo "$cacheKeys"
-
           echo "/* Local files: downloads, cache-x86, cache-x64 */"
           echo '--- 'downloads && ls -lagG downloads
           echo '--- 'cache-x86 && ls -lagG cache-x86
@@ -147,6 +146,57 @@ jobs:
         env:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Windows-x86 pt.2
+        # prepare deps in downloads, delete repository cache, save cache {{{
+        run: exit 0
+      - name: prepare downloads
+        if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
+        run: |
+          find downloads -type f -exec rm \{\} \+
+          cp cache-x86/* ./downloads/
+      - name: delete repository cache
+        if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
+        run: |
+          gh actions-cache delete Windows-x86-${{ hashFiles('urls.txt') }} --confirm
+        env:
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: save cache
+        if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
+        uses: actions/cache/save@v4
+        with:
+          path: downloads
+          enableCrossOsArchive: true
+          key: Windows-x86-${{ hashFiles('urls.txt') }}
+        env:
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # }}}
+      - name: Windows-x64 pt.2
+        # prepare deps in downloads, delete repository cache, save cache {{{
+        run: exit 0
+      - name: prepare downloads
+        if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
+        run: |
+          find downloads -type f -exec rm \{\} \+
+          cp cache-x64/* ./downloads/
+      - name: delete repository cache
+        if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
+        run: |
+          gh actions-cache delete Windows-x64-${{ hashFiles('urls.txt') }} --confirm
+        env:
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: save cache
+        if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
+        uses: actions/cache/save@v4
+        with:
+          path: downloads
+          enableCrossOsArchive: true
+          key: Windows-x64-${{ hashFiles('urls.txt') }}
+        env:
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # }}}
 
   windows:
     if: false
