@@ -60,6 +60,25 @@ jobs:
           echo ${{ env.SODIUM_VER }}  >> urls.txt
           sed -i 's/$/\r/g' urls.txt
 
+      - name: gh-actions-cache
+        run: |
+        run: |
+          gh extension install actions/gh-actions-cache
+          c=$(gh actions-cache list -R ${{ env.REPO }} |cut -f2| grep -c -E "^${{ env.KEY }}$")
+          echo "//" $(gh actions-cache list -R ${{ env.REPO }} |cut -f2)
+          echo "//" $c
+          if [ $c -gt 0 ];then
+            echo "repository cache exist. delete cache" $KEY
+            gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
+          fi
+          exit 1
+        env:
+          KEY: Windows-x86-${{ hashFiles('urls.txt') }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
       - name: Windows-x86 pt.1
         # restore, verify, download {{{
         run: exit 0
