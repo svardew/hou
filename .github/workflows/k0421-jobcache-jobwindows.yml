@@ -60,30 +60,6 @@ jobs:
           echo ${{ env.SODIUM_VER }}  >> urls.txt
           sed -i 's/$/\r/g' urls.txt
 
-      - name: gh-actions-cache
-        shell: bash {0}
-        run: |
-          gh extension install actions/gh-actions-cache
-          caches=$(gh actions-cache list -R ${{ env.REPO }} |cut -f1)
-          echo $caches
-          for ky in $caches
-          do
-            if [ "$ky" = "${{ env.KEY }}" ];then
-              echo "repository cache exist. delete cache" ${{ env.KEY }}
-              gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
-            else
-              echo not match cache...
-            fi
-          done
-        env:
-          KEY: Windows-x86-${{ hashFiles('urls.txt') }}
-          REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Force exit
-        run: exit 1
-
-
-
       - name: Windows-x86 pt.1
         # restore, verify, download {{{
         run: exit 0
@@ -187,12 +163,16 @@ jobs:
           cp cache-x86/* ./downloads/
       - name: delete repository cache
         if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
+        shell: bash {0}
         run: |
-          c=$(gh actions-cache list -R ${{ env.REPO }} | grep -c -F " ${{ env.KEY }} ")
-          if [ $c -gt 0 ];then
-            echo "repository cache exist. delete cache" $KEY
-            gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
-          fi
+          caches=$(gh actions-cache list -R ${{ env.REPO }} | cut -f1)
+          for ky in $caches
+          do
+            if [ "$ky" = "${{ env.KEY }}" ];then
+              echo "repository cache exist. delete cache" $KEY
+              gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
+            fi
+          done
         env:
           KEY: Windows-x86-${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
@@ -218,11 +198,14 @@ jobs:
       - name: delete repository cache
         if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
         run: |
-          c=$(gh actions-cache list -R $REPO | grep -c -F " $KEY ")
-          if [ $c -gt 0 ];then
-            echo "repository cache exist. delete cache" $KEY
-            gh actions-cache delete $KEY -R $REPO --confirm
-          fi
+          caches=$(gh actions-cache list -R ${{ env.REPO }} | cut -f1)
+          for ky in $caches
+          do
+            if [ "$ky" = "${{ env.KEY }}" ];then
+              echo "repository cache exist. delete cache" $KEY
+              gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
+            fi
+          done
         env:
           KEY: Windows-x64-${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
