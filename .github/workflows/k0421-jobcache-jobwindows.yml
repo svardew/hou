@@ -62,7 +62,6 @@ jobs:
 
       - name: gh-actions-cache
         run: |
-        run: |
           gh extension install actions/gh-actions-cache
           c=$(gh actions-cache list -R ${{ env.REPO }} |cut -f2| grep -c -E "^${{ env.KEY }}$")
           echo "//" $(gh actions-cache list -R ${{ env.REPO }} |cut -f2)
