@@ -91,7 +91,7 @@ jobs:
           if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c $KEY) ]; then
             gh actions-cache delete $KEY -R $REPO --confirm
           fi
-          find ${{ env.CACHEDIR }} -type f -name SHA256SUMS* -exec rm \{\} \+
+          find ${{ env.CACHEDIR }} -type f -name 'SHA256SUMS*' -exec rm \{\} \+
           mv ./SHA256SUMS-current ${{ env.CACHEDIR }}/SHA256SUMS
         env:
           KEY: ${{ runner.os }}-debfiles
