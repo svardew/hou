@@ -104,7 +104,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: deb cache, copy to /var/cache/apt
         run: |
-          cp -n ${{ env.CACHEDIR }}/*.deb /var/cache/apt/archives/
+          sudo cp -n ${{ env.CACHEDIR }}/*.deb /var/cache/apt/archives/
         env:
           CACHEDIR: debcache
 
