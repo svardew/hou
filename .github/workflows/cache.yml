@@ -1,4 +1,4 @@
-uame: Cron cache check and rebuild
+name: Cron cache check and rebuild
 # https://docs.github.com/ja/actions/using-workflows/reusing-workflows
 on:
   schedule:
