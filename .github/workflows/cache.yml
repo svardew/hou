@@ -204,6 +204,8 @@ jobs:
           dlf2 ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz
           echo '// check md5sum'
           md5sum -c ../MD5SUMS-x86
+        env:
+          arc: x86
 
       # x64
       - name: ${{ env.arc }} Restore Cache
@@ -215,7 +217,7 @@ jobs:
         env:
           arc: x64
 
-      - name: ${{ env.arch }} Verify cache
+      - name: ${{ env.arc }} Verify cache
         id: verifycache64
         continue-on-error: true
         shell: bash {0}
