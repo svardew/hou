@@ -1,7 +1,7 @@
 name: summarize discard tinytest result
 
 on:
-  wokflow_dispatch:
+  workflow_dispatch:
 
 # Cancels all previous workflow runs for pull requests that have not completed.
 concurrency:
