@@ -518,9 +518,10 @@ jobs:
           echo %WINPTY_URL%>> urls.txt
           echo %SODIUM_VER%>> urls.txt
 
-      - name: Cache downloaded files
-        uses: actions/cache@v4
+      - name: restore Cache downloaded files
+        uses: actions/cache/restore@v4
         with:
+          enableCrossOsArchive: true
           path: downloads
           key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('urls.txt') }}
 
