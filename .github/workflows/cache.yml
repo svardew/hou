@@ -109,9 +109,8 @@ jobs:
           KEY: ${{ runner.os }}-debfiles
           REPO: ${{ github.repository }}
 
-  windows-force-update:
+  windows:
     runs-on: ubuntu-latest
-    if: false #//{{{
     permissions:
       actions: write
       contents: write
@@ -129,6 +128,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository_owner }}/vim
+          path: vim
 
       - name: init
         run: |
@@ -338,195 +338,7 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           arc: x64
-      - run: exit 0 #//}}}
 
-  windows:
-    if: false
-    runs-on: ubuntu-latest
-    env:
-      # Lua
-      LUA_VER: 54
-      LUA_RELEASE: 5.4.2
-      LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
-      LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
-      # winpty
-      WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
-      # libsodium
-      SODIUM_VER: '1.0.19'
-      SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
-      SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
-
-    steps:
-      - name: Initialize
-        id: init
-        shell: bash {0}
-        run: |
-          # LUA32
-          ver=${{ env.LUA_RELEASE }}
-          url=${{ env.LUA32_URL }}
-          url=${url/\%LUA_RELEASE\%/$ver}
-          f=$(basename $url)
-          echo "URL_LUA32=$url" >> $GITHUB_OUTPUT
-          echo "F_LUA32=$f" >> $GITHUB_OUTPUT
-          # LUA64
-          url=${{ env.LUA64_URL }}
-          url=${url/\%LUA_RELEASE\%/$ver}
-          f=$(basename $url)
-          echo "URL_LUA64=$url" >> $GITHUB_OUTPUT
-          echo "F_LUA64=$f" >> $GITHUB_OUTPUT
-          # SODIUM MSVC
-          ver=${{ env.SODIUM_VER }}
-          url=${{ env.SODIUM_MSVC_URL }}
-          url=${url/\%SODIUM_VER\%/$ver}
-          f=$(basename $url)
-          echo "URL_SODIUM_MSVC=$url" >> $GITHUB_OUTPUT
-          echo "F_SODIUM_MSVC=$f" >> $GITHUB_OUTPUT
-          # SODIUM MINGW
-          url=${{ env.SODIUM_MINGW_URL }}
-          url=${url/\%SODIUM_VER\%/$ver}
-          f=$(basename $url)
-          echo "URL_SODIUM_MINGW=$url" >> $GITHUB_OUTPUT
-          echo "F_SODIUM_MINGW=$f" >> $GITHUB_OUTPUT
-          # winpty
-          url=${{ env.WINPTY_URL }}
-          f=$(basename $url)
-          echo "WINPTY_URL=$url" >> $GITHUB_OUTPUT
-          echo "WINPTY_FILE=$f" >> $GITHUB_OUTPUT
-          # checksum
-          touch MD5SUMS
-          cat <<LINES > MD5SUMS
-          25b07e2b5177a2f071f109f641f9e3e4  lua-5.4.2_Win32_dllw6_lib.zip
-          132834e89206d893630410fa2192bd2a  lua-5.4.2_Win64_dllw6_lib.zip
-          a0f941c53b8e509712eeca46104674c4  winpty-0.4.3-msvc2015.zip
-          113f036c91f06a9fdb11186e3dce7d93  libsodium-1.0.19-stable-msvc.zip
-          8867b0380daabd12ece3dbad73197e78  libsodium-1.0.19-stable-mingw.tar.gz
-          LINES
-          cp MD5SUMS{,-x86}
-          sed -i '/lua-5.4.2_Win64/d' MD5SUMS-x86
-          sed -i '/lua-5.4.2_Win32.*zip/ s/\slua-.*zip$/ lua.zip/ ' MD5SUMS-x86
-          sed -i '/winpty/ s/\swinpty.*.zip$/winpty.zip/ ' MD5SUMS-x86
-          sed -i '/libsodium.*zip/ s/\slibsodium.*zip$/ libsodium.zip/ ' MD5SUMS-x86
-          sed -i '/libsodium.*tar.gz/ s/\slibsodium.*tar.gz$/ libsodium.tar.gz/ ' MD5SUMS-x86
-          cp MD5SUMS{,-x64}
-          sed -i '/lua-5.4.2_Win32/d' MD5SUMS-x64
-          sed -i '/lua-5.4.2_Win64.*zip/ s/\slua-.*zip$/ lua.zip/ ' MD5SUMS-x64
-          sed -i '/winpty/ s/\swinpty.*.zip$/winpty.zip/ ' MD5SUMS-x64
-          sed -i '/libsodium.*zip/ s/\slibsodium.*zip$/ libsodium.zip/ ' MD5SUMS-x64
-          sed -i '/libsodium.*tar.gz/ s/\slibsodium.*tar.gz$/ libsodium.tar.gz/ ' MD5SUMS-x64
-
-      - name: Key file (list of download URLs), cache dir
-        run: |
-          touch urls.txt
-          echo ${{ env.LUA_RELEASE }} >> urls.txt
-          echo ${{ env.WINPTY_URL }}  >> urls.txt
-          echo ${{ env.SODIUM_VER }}  >> urls.txt
-          sed -i 's/$/\r/g' urls.txt
-          test -d downloads || mkdir downloads
-          test -d cache-x86 || mkdir cache-x86
-          test -d cache-x64 || mkdir cache-x64
-
-      - name: Restore Cache Windows-x86
-        uses: actions/cache/restore@v4
-        with:
-          enableCrossOsArchive: true
-          path: |
-            downloads
-            cache-${{ env.matrix_arch }}
-          key: ${{ env.runner_os }}-${{ env.matrix_arch }}-${{ hashFiles('urls.txt') }}
-        env:
-          runner_os: Windows
-          matrix_arch: x86
-
-      - name: Restore Cache Windows-x64
-        uses: actions/cache/restore@v4
-        with:
-          enableCrossOsArchive: true
-          path: |
-            downloads
-            cache-${{ env.matrix_arch }}
-          key: ${{ env.runner_os }}-${{ env.matrix_arch }}-${{ hashFiles('urls.txt') }}
-        env:
-          runner_os: Windows
-          matrix_arch: x64
-
-      - name: Verify cache
-        continue-on-error: true
-        shell: bash {0}
-        run: |
-          cd cache-${{ env.runner_os }}-x86
-          md5sum -c ../MD5SUMS-x86
-          if [ $? -gt 0 ]; then
-            echo "x86cache=invalid" >> $GITHUB_OUTPUT
-          fi
-          cd ../
-          cd cache-${{ env.runner_os }}-x64
-          md5sum -c ../MD5SUMS-x64
-          if [ $? -gt 0 ]; then
-            echo "x64cache=invalid" >> $GITHUB_OUTPUT
-          fi
-        env:
-          runner_os: Windows
-
-      - name: Download dependencies
-        if: ${{ steps.verifycache.x86cache == 'invalid' || steps.verifycache.x64cache == 'invalid' }}
-        run: |
-          dlf2 () {
-            if [ ! -f "$2" ]
-            then wget -nv --tries=2 --waitretry=10 -O $2 $1
-            else echo Skip Downlaod. $2
-            fi
-          }
-          if [ "${{ steps.verifycache.x86cache }}" = 'invalid' ]; then
-            cd cache-x86
-            dlf2 ${{ steps.init.outputs.URL_LUA32 }}        lua.zip
-            dlf2 ${{ steps.init.outputs.URL_WINPTY }}       winpty.zip
-            dlf2 ${{ steps.init.outputs.URL_SODIUM_MSVC }}  libsodium.zip
-            dlf2 ${{ steps.init.outputs.URL_SODIUM_MINGW }} libsodium.tar.gz
-            cd ../
-          fi
-          if [ "${{ steps.verifycache.x64cache }}" = 'invalid' ]; then
-            cd cache-x86
-            dlf2 ${{ steps.init.outputs.URL_LUA64 }}        lua.zip
-            dlf2 ${{ steps.init.outputs.URL_WINPTY }}       winpty.zip
-            dlf2 ${{ steps.init.outputs.URL_SODIUM_MSVC }}  libsodium.zip
-            dlf2 ${{ steps.init.outputs.URL_SODIUM_MINGW }} libsodium.tar.gz
-            cd ../
-          fi
-
-      - name: Prepare dependencies Windows-x86
-        if: ${{ steps.verifycache.x86cache == 'invalid' }}
-        run: |
-          if [ -d downloads ]; then
-            find downloads -type f -exec rm \{\} \+
-          fi
-          cp cache-x86/* ./downloads/
-
-      - name: Delete cache Windows-x86
-        if: ${{ steps.verifycache.x86cache == 'invalid' }}
-        run: |
-          gh cache delete ${{ env.runner_os }}-${{ env.matrix_arch }}-${{ hashFiles('urls.txt') }}
-
-      - name: Save cache Windows-x86
-        if: ${{ steps.verifycache.x86cache == 'invalid' }}
-
-
-        uses: actions/cache/save@v4
-        with:
-          path: downloads
-          key: ${{ steps.verifydownloads.outputs.KEY }}
-          enableCrossOsArchive: true
-
-      - name: return valid KEY
-        id: validkey
-        run: |
-          if [ $restorecacheflag == 'valid' ]; then
-            echo "restore-key=$restorecache_key" >> $GITHUB_OUTPUT
-          elif [ $savenewcacheflag == 'valid' ]; then
-            echo "restore-key=$savenewcache_key" >> $GITHUB_OUTPUT
-          fi
-        env:
-          restorecacheflag: ${{ steps.verifycache.outputs.FLAG }}
-          restorecache_key: ${{ steps.verifycache.outputs.KEY }}
-          savenewcacheflag: ${{ steps.verifydownloads.outputs.FLAG }}
-          savenewcache_key: ${{ steps.verifydownloads.outputs.KEY }}
+      - name: finish job
+        run: exit 0
 
