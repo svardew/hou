@@ -71,7 +71,7 @@ jobs:
           )
           sudo apt-get install --download-only -y "${PKGS[@]}"
           echo '/* list system cache file */'
-          find /var/cache/apt/archives -type f -name '*.deb'
+          find /var/cache/apt/archives -maxdepth 1 -type f -name '*.deb'
       - name: Copy apt cache into homedir
         shell: bash {0}
         run: |
