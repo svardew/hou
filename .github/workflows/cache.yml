@@ -48,6 +48,7 @@ jobs:
           sudo apt-get update
           sudo apt-get upgrade --download-only -y
       - name: apt install --download
+        run: |
           PKGS=( \
             gettext \
             desktop-file-utils \
