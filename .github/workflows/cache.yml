@@ -1,0 +1,526 @@
+uame: Cron cache check and rebuild
+# https://docs.github.com/ja/actions/using-workflows/reusing-workflows
+on:
+  schedule:
+    - cron: '24 15 * * *'  # Run once per day.
+  workflow_dispatch:
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  linux-debcache:
+    if: true
+    runs-on: ubuntu-22.04 # fix version, not latest
+    permissions:
+      actions: write
+      contents: write
+    env:
+      CACHEDIR: debcache
+    steps:
+      - name: Checkout repository from github
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/vim
+          path: vim
+      - name: init
+        run: |
+          gh extension install actions/gh-actions-cache
+          test -d ${{ env.CACHEDIR }} || mkdir ${{ env.CACHEDIR }}
+          sudo touch /etc/apt/apt.conf.d/99githubworkflows
+          echo 'Binary::apt::APT::Cache "/var/cache/apt";' | sudo tee -a /etc/apt/apt.conf.d/99githubworkflows
+          echo 'Binary::apt::APT::Cache::Archives "archives";' | sudo tee -a /etc/apt/apt.conf.d/99githubworkflows
+      - name: Restore cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.CACHEDIR }}
+          key: ${{ runner.os }}-debfiles
+      - name: Restore system apt cache
+        continue-on-error: true # in case no deb files
+        shell: bash {0}
+        run: |
+          sudo cp -n ${{ env.CACHEDIR }}/*.deb /var/cache/apt/archives/
+          cat ${{ env.CACHEDIR }}/SHA256SUMS | sort > ./SHA256SUMS-repocache
+          echo '/* list restored file */'
+          find ${{ env.CACHEDIR }} -type f -name '*.deb'
+      - name: apt upgrade --download
+        run: |
+          sudo apt-get update
+          sudo apt-get upgrade --download-only -y
+      - name: apt install --download
+          PKGS=( \
+            gettext \
+            desktop-file-utils \
+            libtool-bin \
+          )
+          PKGS+=( \
+            autoconf \
+            gdb \
+            lcov \
+            libcanberra-dev \
+            python2-dev \
+            python3-dev \
+            cscope \
+            libsodium-dev \
+            attr \
+            libattr1-dev
+          )
+          sudo apt-get install --download-only -y "${PKGS[@]}"
+          echo '/* list system cache file */'
+          find /var/cache/apt/archives -type f -name '*.deb'
+      - name: Copy apt cache into homedir
+        shell: bash {0}
+        run: |
+          cp -n /var/cache/apt/archives/*.deb ./${{ env.CACHEDIR }}
+          cd ${{ env.CACHEDIR }}
+          sha256sum *.deb | sort > ../SHA256SUMS-current
+      - name: Check cache
+        run: |
+          if [ ${{ hashFiles('SHA256SUMS-current') == hashFiles(SHA257SUMS-repocache') }} ]
+          then echo '/* SHA256SUMS is same, keep Repository cache */'
+          else echo '/* SHA256SUMS not equal. update Repository cache */'
+          fi
+      - name: Update repository cache (delete)
+        if: ${{ hashFiles('SHA256SUMS-current') != hashFiles(SHA256SUMS-repocache') }}
+        shell: bash {0}
+        run: |
+          if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c $KEY) ]; then
+            gh actions-cache delete $KEY -R $REPO --confirm
+          fi
+          find ${{ env.CACHEDIR }} -type f -name SHA256SUMS* -exec rm \{\} \+
+          mv ./SHA256SUMS-current ${{ env.CACHEDIR }}/SHA256SUMS
+        env:
+          KEY: ${{ runner.os }}-debfiles
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update repository cache (save)
+        if: ${{ hashFiles('SHA256SUMS-current') != hashFiles(SHA256SUMS-repocache') }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.CACHEDIR }}
+          key: ${{ env.KEY }}
+        env:
+          KEY: ${{ runner.os }}-debfiles
+          REPO: ${{ github.repository }}
+
+  windows-force-update:
+    runs-on: ubuntu-latest
+    if: false #//{{{
+    permissions:
+      actions: write
+      contents: write
+    env:
+      LUA_RELEASE: '5.4.2'
+      LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-5.4.2_Win32_dllw6_lib.zip
+      LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-5.4.2_Win64_dllw6_lib.zip
+      WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+      SODIUM_VER: '1.0.19'
+      SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.19-stable-msvc.zip
+      SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.19-stable-mingw.tar.gz
+
+    steps:
+      - name: Checkout repository from github
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/vim
+
+      - name: init
+        run: |
+          test -d downloads || mkdir downloads
+          test -d cache-x86 || mkdir cache-x86
+          test -d cache-x64 || mkdir cache-x64
+          touch MD5SUMS
+          cat <<LINES > MD5SUMS
+          25b07e2b5177a2f071f109f641f9e3e4  lua-5.4.2_Win32_dllw6_lib.zip
+          132834e89206d893630410fa2192bd2a  lua-5.4.2_Win64_dllw6_lib.zip
+          a0f941c53b8e509712eeca46104674c4  winpty-0.4.3-msvc2015.zip
+          113f036c91f06a9fdb11186e3dce7d93  libsodium-1.0.19-stable-msvc.zip
+          8867b0380daabd12ece3dbad73197e78  libsodium-1.0.19-stable-mingw.tar.gz
+          LINES
+          cat <<LINES > MD5SUMS-x86
+          25b07e2b5177a2f071f109f641f9e3e4  lua.zip
+          a0f941c53b8e509712eeca46104674c4  winpty.zip
+          113f036c91f06a9fdb11186e3dce7d93  libsodium.zip
+          8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
+          LINES
+          cat <<LINES > MD5SUMS-x64
+          132834e89206d893630410fa2192bd2a  lua.zip
+          a0f941c53b8e509712eeca46104674c4  winpty.zip
+          113f036c91f06a9fdb11186e3dce7d93  libsodium.zip
+          8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
+          LINES
+
+      - name: Key file (list of download URLs)
+        run: |
+          touch urls.txt && truncate --size 0 urls.txt
+          echo ${{ env.LUA_RELEASE }} >> urls.txt
+          echo ${{ env.WINPTY_URL }}  >> urls.txt
+          echo ${{ env.SODIUM_VER }}  >> urls.txt
+          sed -i 's/$/\r/g' urls.txt
+
+      # x86
+      - name: ${{ env.arc }} Restore Cache
+        uses: actions/cache/restore@v4
+        with:
+          enableCrossOsArchive: true
+          path: downloads
+          key: Windows-x86-${{ hashFiles('urls.txt') }}
+        env:
+          arc: x86
+
+      - name: ${{ env.arc }} Verify cache
+        id: verifycache86
+        continue-on-error: true
+        shell: bash {0}
+        run: |
+          find downloads -type f -exec mv \{\} ./cache-x86 \;
+          cd cache-x86
+          md5sum -c ../MD5SUMS-x86
+          if [ $? -gt 0 ]; then
+            echo "cache=invalid" >> $GITHUB_OUTPUT
+          fi
+        env:
+          arc: x86
+
+      - name: ${{ env.arc }} Download missing dependencies
+        if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
+        run: |
+          function dlf2 () {
+            if [ ! -f "$2" ]
+            then wget -nv --tries=2 --waitretry=10 -O $2 $1
+            else echo Skip Downlaod. $2
+            fi
+          }
+          cd cache-x86
+          dlf2 ${{ env.LUA32_URL }}        lua.zip
+          dlf2 ${{ env.WINPTY_URL }}       winpty.zip
+          dlf2 ${{ env.SODIUM_MSVC_URL }}  libsodium.zip
+          dlf2 ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz
+          echo '// check md5sum'
+          md5sum -c ../MD5SUMS-x86
+
+      # x64
+      - name: ${{ env.arc }} Restore Cache
+        uses: actions/cache/restore@v4
+        with:
+          enableCrossOsArchive: true
+          path: downloads
+          key: Windows-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+        env:
+          arc: x64
+
+      - name: ${{ env.arch }} Verify cache
+        id: verifycache64
+        continue-on-error: true
+        shell: bash {0}
+        run: |
+          find downloads -type f -exec mv \{\} ./cache-x64 \;
+          cd cache-x64
+          md5sum -c ../MD5SUMS-x64
+          if [ $? -gt 0 ]; then
+            echo "cache=invalid" >> $GITHUB_OUTPUT
+          fi
+        env:
+          arc: x64
+
+      - name: ${{ env.arc }} Download missing dependencies
+        if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
+        run: |
+          function dlf2 () {
+            if [ ! -f "$2" ]
+            then wget -nv --tries=2 --waitretry=10 -O $2 $1
+            else echo Skip Downlaod. $2
+            fi
+          }
+          cd cache-x64
+          dlf2 ${{ env.LUA64_URL }}        lua.zip
+          dlf2 ${{ env.WINPTY_URL }}       winpty.zip
+          dlf2 ${{ env.SODIUM_MSVC_URL }}  libsodium.zip
+          dlf2 ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz
+          echo '// check md5sum'
+          md5sum -c ../MD5SUMS-x64
+        env:
+          arc: x64
+
+      - name: List cache
+        shell: bash {0}
+        run: |
+          gh extension install actions/gh-actions-cache
+          echo "/* List of repository cache */"
+          gh actions-cache list -R $REPO -L 100 | cut -f 1
+          echo "/* Local dependencies */"
+          echo '--- 'downloads && ls -lagG downloads
+          echo '--- 'cache-x86 && ls -lagG cache-x86
+          echo '--- 'cache-x64 && ls -lagG cache-x64
+        env:
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # x86
+      - name: ${{ env.arc }} Copy dependencies to downloads
+        if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
+        run: |
+          find downloads -type f -exec rm \{\} \+
+          cp cache-x86/* ./downloads/
+        env:
+          arc: x86
+
+      - name: ${{ env.arc }} Delete repository cache
+        if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
+        shell: bash {0}
+        run: |
+          caches=$(gh actions-cache list -R ${{ env.REPO }} | cut -f1)
+          for ky in $caches
+          do
+            if [ "$ky" = "${{ env.KEY }}" ];then
+              echo "repository cache exist. delete cache" ${{ env.KEY }}
+              gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
+            fi
+          done
+        env:
+          KEY: Windows-x86-${{ hashFiles('urls.txt') }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          arc: x86
+
+      - name: ${{ env.arc }} Save cache
+        if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
+        uses: actions/cache/save@v4
+        with:
+          path: downloads
+          enableCrossOsArchive: true
+          key: Windows-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+        env:
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          arc: x86
+
+      # x64
+      - name: ${{ env.arc }} Copy dependencies to downloads
+        if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
+        run: |
+          find downloads -type f -exec rm \{\} \+
+          cp cache-x64/* ./downloads/
+        env:
+          arc: x64
+
+      - name: ${{ env.arc }} Delete repository cache
+        if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
+        run: |
+          caches=$(gh actions-cache list -R ${{ env.REPO }} | cut -f1)
+          for ky in $caches
+          do
+            if [ "$ky" = "${{ env.KEY }}" ];then
+              echo "repository cache exist. delete cache" ${{ env.KEY }}
+              gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
+            fi
+          done
+        env:
+          KEY: Windows-x64-${{ hashFiles('urls.txt') }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          arc: x64
+
+      - name: ${{ env.arc }} Save cache
+        if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
+        uses: actions/cache/save@v4
+        with:
+          path: downloads
+          enableCrossOsArchive: true
+          key: Windows-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+        env:
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          arc: x64
+      - run: exit 0 #//}}}
+
+  windows:
+    if: false
+    runs-on: ubuntu-latest
+    env:
+      # Lua
+      LUA_VER: 54
+      LUA_RELEASE: 5.4.2
+      LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
+      LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
+      # winpty
+      WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+      # libsodium
+      SODIUM_VER: '1.0.19'
+      SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
+      SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
+
+    steps:
+      - name: Initialize
+        id: init
+        shell: bash {0}
+        run: |
+          # LUA32
+          ver=${{ env.LUA_RELEASE }}
+          url=${{ env.LUA32_URL }}
+          url=${url/\%LUA_RELEASE\%/$ver}
+          f=$(basename $url)
+          echo "URL_LUA32=$url" >> $GITHUB_OUTPUT
+          echo "F_LUA32=$f" >> $GITHUB_OUTPUT
+          # LUA64
+          url=${{ env.LUA64_URL }}
+          url=${url/\%LUA_RELEASE\%/$ver}
+          f=$(basename $url)
+          echo "URL_LUA64=$url" >> $GITHUB_OUTPUT
+          echo "F_LUA64=$f" >> $GITHUB_OUTPUT
+          # SODIUM MSVC
+          ver=${{ env.SODIUM_VER }}
+          url=${{ env.SODIUM_MSVC_URL }}
+          url=${url/\%SODIUM_VER\%/$ver}
+          f=$(basename $url)
+          echo "URL_SODIUM_MSVC=$url" >> $GITHUB_OUTPUT
+          echo "F_SODIUM_MSVC=$f" >> $GITHUB_OUTPUT
+          # SODIUM MINGW
+          url=${{ env.SODIUM_MINGW_URL }}
+          url=${url/\%SODIUM_VER\%/$ver}
+          f=$(basename $url)
+          echo "URL_SODIUM_MINGW=$url" >> $GITHUB_OUTPUT
+          echo "F_SODIUM_MINGW=$f" >> $GITHUB_OUTPUT
+          # winpty
+          url=${{ env.WINPTY_URL }}
+          f=$(basename $url)
+          echo "WINPTY_URL=$url" >> $GITHUB_OUTPUT
+          echo "WINPTY_FILE=$f" >> $GITHUB_OUTPUT
+          # checksum
+          touch MD5SUMS
+          cat <<LINES > MD5SUMS
+          25b07e2b5177a2f071f109f641f9e3e4  lua-5.4.2_Win32_dllw6_lib.zip
+          132834e89206d893630410fa2192bd2a  lua-5.4.2_Win64_dllw6_lib.zip
+          a0f941c53b8e509712eeca46104674c4  winpty-0.4.3-msvc2015.zip
+          113f036c91f06a9fdb11186e3dce7d93  libsodium-1.0.19-stable-msvc.zip
+          8867b0380daabd12ece3dbad73197e78  libsodium-1.0.19-stable-mingw.tar.gz
+          LINES
+          cp MD5SUMS{,-x86}
+          sed -i '/lua-5.4.2_Win64/d' MD5SUMS-x86
+          sed -i '/lua-5.4.2_Win32.*zip/ s/\slua-.*zip$/ lua.zip/ ' MD5SUMS-x86
+          sed -i '/winpty/ s/\swinpty.*.zip$/winpty.zip/ ' MD5SUMS-x86
+          sed -i '/libsodium.*zip/ s/\slibsodium.*zip$/ libsodium.zip/ ' MD5SUMS-x86
+          sed -i '/libsodium.*tar.gz/ s/\slibsodium.*tar.gz$/ libsodium.tar.gz/ ' MD5SUMS-x86
+          cp MD5SUMS{,-x64}
+          sed -i '/lua-5.4.2_Win32/d' MD5SUMS-x64
+          sed -i '/lua-5.4.2_Win64.*zip/ s/\slua-.*zip$/ lua.zip/ ' MD5SUMS-x64
+          sed -i '/winpty/ s/\swinpty.*.zip$/winpty.zip/ ' MD5SUMS-x64
+          sed -i '/libsodium.*zip/ s/\slibsodium.*zip$/ libsodium.zip/ ' MD5SUMS-x64
+          sed -i '/libsodium.*tar.gz/ s/\slibsodium.*tar.gz$/ libsodium.tar.gz/ ' MD5SUMS-x64
+
+      - name: Key file (list of download URLs), cache dir
+        run: |
+          touch urls.txt
+          echo ${{ env.LUA_RELEASE }} >> urls.txt
+          echo ${{ env.WINPTY_URL }}  >> urls.txt
+          echo ${{ env.SODIUM_VER }}  >> urls.txt
+          sed -i 's/$/\r/g' urls.txt
+          test -d downloads || mkdir downloads
+          test -d cache-x86 || mkdir cache-x86
+          test -d cache-x64 || mkdir cache-x64
+
+      - name: Restore Cache Windows-x86
+        uses: actions/cache/restore@v4
+        with:
+          enableCrossOsArchive: true
+          path: |
+            downloads
+            cache-${{ env.matrix_arch }}
+          key: ${{ env.runner_os }}-${{ env.matrix_arch }}-${{ hashFiles('urls.txt') }}
+        env:
+          runner_os: Windows
+          matrix_arch: x86
+
+      - name: Restore Cache Windows-x64
+        uses: actions/cache/restore@v4
+        with:
+          enableCrossOsArchive: true
+          path: |
+            downloads
+            cache-${{ env.matrix_arch }}
+          key: ${{ env.runner_os }}-${{ env.matrix_arch }}-${{ hashFiles('urls.txt') }}
+        env:
+          runner_os: Windows
+          matrix_arch: x64
+
+      - name: Verify cache
+        continue-on-error: true
+        shell: bash {0}
+        run: |
+          cd cache-${{ env.runner_os }}-x86
+          md5sum -c ../MD5SUMS-x86
+          if [ $? -gt 0 ]; then
+            echo "x86cache=invalid" >> $GITHUB_OUTPUT
+          fi
+          cd ../
+          cd cache-${{ env.runner_os }}-x64
+          md5sum -c ../MD5SUMS-x64
+          if [ $? -gt 0 ]; then
+            echo "x64cache=invalid" >> $GITHUB_OUTPUT
+          fi
+        env:
+          runner_os: Windows
+
+      - name: Download dependencies
+        if: ${{ steps.verifycache.x86cache == 'invalid' || steps.verifycache.x64cache == 'invalid' }}
+        run: |
+          dlf2 () {
+            if [ ! -f "$2" ]
+            then wget -nv --tries=2 --waitretry=10 -O $2 $1
+            else echo Skip Downlaod. $2
+            fi
+          }
+          if [ "${{ steps.verifycache.x86cache }}" = 'invalid' ]; then
+            cd cache-x86
+            dlf2 ${{ steps.init.outputs.URL_LUA32 }}        lua.zip
+            dlf2 ${{ steps.init.outputs.URL_WINPTY }}       winpty.zip
+            dlf2 ${{ steps.init.outputs.URL_SODIUM_MSVC }}  libsodium.zip
+            dlf2 ${{ steps.init.outputs.URL_SODIUM_MINGW }} libsodium.tar.gz
+            cd ../
+          fi
+          if [ "${{ steps.verifycache.x64cache }}" = 'invalid' ]; then
+            cd cache-x86
+            dlf2 ${{ steps.init.outputs.URL_LUA64 }}        lua.zip
+            dlf2 ${{ steps.init.outputs.URL_WINPTY }}       winpty.zip
+            dlf2 ${{ steps.init.outputs.URL_SODIUM_MSVC }}  libsodium.zip
+            dlf2 ${{ steps.init.outputs.URL_SODIUM_MINGW }} libsodium.tar.gz
+            cd ../
+          fi
+
+      - name: Prepare dependencies Windows-x86
+        if: ${{ steps.verifycache.x86cache == 'invalid' }}
+        run: |
+          if [ -d downloads ]; then
+            find downloads -type f -exec rm \{\} \+
+          fi
+          cp cache-x86/* ./downloads/
+
+      - name: Delete cache Windows-x86
+        if: ${{ steps.verifycache.x86cache == 'invalid' }}
+        run: |
+          gh cache delete ${{ env.runner_os }}-${{ env.matrix_arch }}-${{ hashFiles('urls.txt') }}
+
+      - name: Save cache Windows-x86
+        if: ${{ steps.verifycache.x86cache == 'invalid' }}
+
+
+        uses: actions/cache/save@v4
+        with:
+          path: downloads
+          key: ${{ steps.verifydownloads.outputs.KEY }}
+          enableCrossOsArchive: true
+
+      - name: return valid KEY
+        id: validkey
+        run: |
+          if [ $restorecacheflag == 'valid' ]; then
+            echo "restore-key=$restorecache_key" >> $GITHUB_OUTPUT
+          elif [ $savenewcacheflag == 'valid' ]; then
+            echo "restore-key=$savenewcache_key" >> $GITHUB_OUTPUT
+          fi
+        env:
+          restorecacheflag: ${{ steps.verifycache.outputs.FLAG }}
+          restorecache_key: ${{ steps.verifycache.outputs.KEY }}
+          savenewcacheflag: ${{ steps.verifydownloads.outputs.FLAG }}
+          savenewcache_key: ${{ steps.verifydownloads.outputs.KEY }}
+
