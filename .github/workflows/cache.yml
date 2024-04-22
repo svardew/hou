@@ -77,12 +77,12 @@ jobs:
           sha256sum *.deb | sort > ../SHA256SUMS-current
       - name: Check cache
         run: |
-          if [ ${{ hashFiles('SHA256SUMS-current') == hashFiles(SHA257SUMS-repocache') }} ]
+          if [ ${{ hashFiles('SHA256SUMS-current') == hashFiles('SHA257SUMS-repocache') }} ]
           then echo '/* SHA256SUMS is same, keep Repository cache */'
           else echo '/* SHA256SUMS not equal. update Repository cache */'
           fi
       - name: Update repository cache (delete)
-        if: ${{ hashFiles('SHA256SUMS-current') != hashFiles(SHA256SUMS-repocache') }}
+        if: ${{ hashFiles('SHA256SUMS-current') != hashFiles('SHA256SUMS-repocache') }}
         shell: bash {0}
         run: |
           if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c $KEY) ]; then
@@ -95,7 +95,7 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update repository cache (save)
-        if: ${{ hashFiles('SHA256SUMS-current') != hashFiles(SHA256SUMS-repocache') }}
+        if: ${{ hashFiles('SHA256SUMS-current') != hashFiles('SHA256SUMS-repocache') }}
         uses: actions/cache/save@v4
         with:
           path: ${{ env.CACHEDIR }}
