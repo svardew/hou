@@ -16,7 +16,7 @@ permissions:
 jobs:
   linux:
     runs-on: ubuntu-22.04
-
+    if: false
     env:
       CC: ${{ matrix.compiler }}
       GCC_VER: 13
@@ -656,6 +656,13 @@ jobs:
       #  with:
       #    name: vim${{ matrix.bits }}-${{ matrix.toolchain }}
       #    path: ./artifacts
+
+      - name: Modify testdir/{Makefile,Make_mvc.mak}
+        shell: bash {0}
+        run: |
+          echo "Make_mvc.mak should treat tinytest result"
+          sed -i '/summarize.vim\ messages/i \\t@copy /y test_reult.log test_tinytes.log > nul' src/testdir/Make_mvc.mak
+          sed -i '/summarize.vim\ messages/i \\t@cmd /c type test_tinytes.log' src/testdir/Make_mvc.mak
 
       - name: Test and show the result of testing gVim
         if: matrix.GUI == 'yes' || matrix.VIMDLL == 'yes'
