@@ -80,7 +80,9 @@ jobs:
           sha256sum *.deb | sort > ../SHA256SUMS-current
       - name: Check cache
         run: |
-          if [ ${{ hashFiles('SHA256SUMS-current') == hashFiles('SHA257SUMS-repocache') }} ]
+          echo current-SHA256 ${{ hashFiles('SHA256SUMS-current') }}
+          echo repocache-SHA256 ${{ hashFiles('SHA256SUMS-repocache') }}
+          if [ ${{ hashFiles('SHA256SUMS-current') == hashFiles('SHA257SUMS-repocache') }} = 'true' ]
           then echo '/* SHA256SUMS is same, keep Repository cache */'
           else echo '/* SHA256SUMS not equal. update Repository cache */'
           fi
