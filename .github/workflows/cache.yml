@@ -82,7 +82,7 @@ jobs:
         run: |
           echo current-SHA256 ${{ hashFiles('SHA256SUMS-current') }}
           echo repocache-SHA256 ${{ hashFiles('SHA256SUMS-repocache') }}
-          if [ ${{ hashFiles('SHA256SUMS-current') == hashFiles('SHA257SUMS-repocache') }} = 'true' ]
+          if [ ${{ hashFiles('SHA256SUMS-current') == hashFiles('SHA256SUMS-repocache') }} = 'true' ]
           then echo '/* SHA256SUMS is same, keep Repository cache */'
           else echo '/* SHA256SUMS not equal. update Repository cache */'
           fi
