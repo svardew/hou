@@ -24,12 +24,15 @@ jobs:
           repository: ${{ github.repository_owner }}/vim
           path: vim
       - name: init
+        shell: bash {0}
         run: |
           gh extension install actions/gh-actions-cache
           test -d ${{ env.CACHEDIR }} || mkdir ${{ env.CACHEDIR }}
           sudo touch /etc/apt/apt.conf.d/99githubworkflows
           echo 'Binary::apt::APT::Cache "/var/cache/apt";' | sudo tee -a /etc/apt/apt.conf.d/99githubworkflows
           echo 'Binary::apt::APT::Cache::Archives "archives";' | sudo tee -a /etc/apt/apt.conf.d/99githubworkflows
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Restore cache
         uses: actions/cache/restore@v4
         with:
