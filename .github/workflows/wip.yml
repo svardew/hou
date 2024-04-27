@@ -64,11 +64,11 @@ jobs:
           u=${{ env.WINPTY_URL }}; f=${u/*\//}
           echo "WINPTY_URL=$u" >> $GITHUB_OUTPUT
           echo "WINPTY_FILE=$f" >> $GITHUB_OUTPUT
-          u=${{ env._SOIUM_MSVC_URL }}; ver=${{ env.SODIUM_VER }}
+          u=${{ env._SODIUM_MSVC_URL }}; ver=${{ env.SODIUM_VER }}
           u=${u//\%SODIUM_VER\%/$ver}; f=${u/*-RELEASE\//}
           echo "SODIUM_MSVC_URL=$u" >> $GITHUB_OUTPUT
           echo "SODIUM_MSVC_FILE=$f" >> $GITHUB_OUTPUT
-          u=${{ env._SOIUM_MINGW_URL }}; ver=${{ env.SODIUM_VER }}
+          u=${{ env._SODIUM_MINGW_URL }}; ver=${{ env.SODIUM_VER }}
           u=${u//\%SODIUM_VER\%/$ver}; f=${u/*-RELEASE\//}
           echo "SODIUM_MINGW_URL=$u" >> $GITHUB_OUTPUT
           echo "SODIUM_MINGW_FILE=$f" >> $GITHUB_OUTPUT
