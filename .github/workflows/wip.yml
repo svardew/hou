@@ -83,7 +83,8 @@ jobs:
           echo ${{ env.SODIUM_VER }} >> urls.txt
           sed -i 's/$/\r/g' urls.txt
 
-      - name: [{{ env.arc }}] Restore Cache
+      # Arch all
+      - name: [${{ env.arc }}] Restore Cache
         uses: actions/cache/restore@v4
         with:
           enableCrossOsArchive: true
