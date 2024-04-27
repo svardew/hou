@@ -74,6 +74,7 @@ jobs:
           echo "SODIUM_MINGW_FILE=$f" >> $GITHUB_OUTPUT
         env:
           arc: all
+          GH_TOKEN: ${{ github.token }}
 
       - name: Create Keyfile
         run: |
