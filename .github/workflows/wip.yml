@@ -96,7 +96,7 @@ jobs:
           REPO: ${{ github.repository }}
 
       - name: ${{ env.arc }} / Verify cache
-        id: verifycache${{ env.arc }}
+        id: verifycache
         continue-on-error: true
         shell: bash {0}
         run: |
@@ -112,7 +112,7 @@ jobs:
           arc: all
 
       - name: ${{ env.arc }} / Use current cache
-        if: steps.verifycache${{ env.arc }}.outputs.cache == 'valid'
+        if: steps.verifycache.outputs.cache == 'valid'
         run: |
           echo "repository cache is fine."
           echo ${{ env.KEY }}
@@ -123,7 +123,7 @@ jobs:
           REPO: ${{ github.repository }}
 
       - name: ${{ env.arc }} / Download missing dependencies
-        if: steps.verifycache${{ env.arc }}.outputs.cache == 'invalid'
+        if: steps.verifycache.outputs.cache == 'invalid'
         run: |
           function dlf2 () {
             if [ ! -f "$2" ]
@@ -143,7 +143,7 @@ jobs:
           arc: all
 
       - name: ${{ env.arc }} / Delete repository cache
-        if: steps.verifycache${{ env.arc }}.outputs.cache == 'invalid'
+        if: steps.verifycache.outputs.cache == 'invalid'
         run: |
           caches=$(gh actions-cache list -R ${{ env.REPO }} | cut -f1)
           for ky in $caches
@@ -160,7 +160,7 @@ jobs:
           REPO: ${{ github.repository }}
 
       - name: ${{ env.arc }} / Save cache
-        if: steps.verifycache${{ env.arc }}.outputs.cache == 'invalid'
+        if: steps.verifycache.outputs.cache == 'invalid'
         uses: actions/cache/save@v4
         with:
           path: downloads
