@@ -146,6 +146,8 @@ jobs:
           dlf2 ${{ steps.env.outputs.SODIUM_MINGW_URL }} ${{ steps.env.outputs.SODIUM_MINGW_FILE }}
           echo '// check md5sum'
           md5sum -c ../MD5SUMS-${{ env.arc }}
+          cd ../
+          find cache-${{ env.arc }} -type f -exec cp -vn \{\} ./downloads/ \;
           echo "### DownloadDeps :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           arc: all
