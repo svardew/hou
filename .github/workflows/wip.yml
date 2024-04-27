@@ -75,6 +75,7 @@ jobs:
           echo "### SetupEnv :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           arc: all
+          os: Windows
           GH_TOKEN: ${{ github.token }}
 
       - name: Create Keyfile
@@ -92,10 +93,10 @@ jobs:
         with:
           enableCrossOsArchive: true
           path: downloads
-          key: ${{ env.KEY }}
+          key: ${{ env.os }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
         env:
           arc: all
-          KEY: Windows-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+          os: Windows
           REPO: ${{ github.repository }}
 
       - name: ${{ env.arc }} / Verify cache
@@ -114,17 +115,18 @@ jobs:
           echo "### VerifyCache :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           arc: all
+          os: Windows
 
       - name: ${{ env.arc }} / Use current cache
         if: steps.verifycache.outputs.cache == 'valid'
         run: |
           echo "repository cache is fine."
-          echo ${{ env.KEY }}
+          echo "KEY: ${{ env.os }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}"
           echo "### NotUpdateCache :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           arc: all
+          os: Windows
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KEY: Windows-${{ env.arc }}-${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
 
       - name: ${{ env.arc }} / Download missing dependencies
@@ -147,23 +149,25 @@ jobs:
           echo "### DownloadDeps :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           arc: all
+          os: Windows
 
       - name: ${{ env.arc }} / Delete repository cache
         if: steps.verifycache.outputs.cache == 'invalid'
         run: |
           caches=$(gh actions-cache list -R ${{ env.REPO }} | cut -f1)
+          restorekey=${{ env.os }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
           for ky in $caches
           do
-            if [ "$ky" = "${{ env.KEY }}" ]; then
-              echo "repository cache exist. delete cache" ${{ env.KEY }}
-              gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
+            if [ "$ky" = "$restorekey" ]; then
+              echo "repository cache exist. delete cache" $restorekey
+              gh actions-cache delete $restorekey -R ${{ env.REPO }} --confirm
             fi
           done
           echo "### DeleteRepoCache :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           arc: all
+          os: Windows
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KEY: Windows-${{ env.arc }}-${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
 
       - name: ${{ env.arc }} / Save cache
@@ -172,11 +176,11 @@ jobs:
         with:
           path: downloads
           enableCrossOsArchive: true
-          key: ${{ env.KEY }}
+          key: ${{ env.os }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
         env:
           arc: all
+          os: Windows
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KEY: Windows-${{ env.arc }}-${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
 
       - name: finish job
