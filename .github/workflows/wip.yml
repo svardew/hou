@@ -84,7 +84,7 @@ jobs:
           sed -i 's/$/\r/g' urls.txt
 
       # Arch all
-      - name: [${{ env.arc }}] Restore Cache
+      - name: ${{ env.arc }} / Restore Cache
         uses: actions/cache/restore@v4
         with:
           enableCrossOsArchive: true
@@ -95,7 +95,7 @@ jobs:
           KEY: Windows-${{ env.arc }}-${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
 
-      - name: [${{ env.arc }}] Verify cache
+      - name: ${{ env.arc }} / Verify cache
         id: verifycache${{ env.arc }}
         continue-on-error: true
         shell: bash {0}
@@ -111,7 +111,7 @@ jobs:
         env:
           arc: all
 
-      - name: [${{ env.arc }}] Use current cache
+      - name: ${{ env.arc }} / Use current cache
         if: steps.verifycache${{ env.arc }}.outputs.cache == 'valid'
         run: |
           echo "repository cache is fine."
@@ -122,7 +122,7 @@ jobs:
           KEY: Windows-${{ env.arc }}-${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
 
-      - name: [${{ env.arc }}] Download missing dependencies
+      - name: ${{ env.arc }} / Download missing dependencies
         if: steps.verifycache${{ env.arc }}.outputs.cache == 'invalid'
         run: |
           function dlf2 () {
@@ -142,7 +142,7 @@ jobs:
         env:
           arc: all
 
-      - name: [${{ env.arc }}] Delete repository cache
+      - name: ${{ env.arc }} / Delete repository cache
         if: steps.verifycache${{ env.arc }}.outputs.cache == 'invalid'
         run: |
           caches=$(gh actions-cache list -R ${{ env.REPO }} | cut -f1)
@@ -159,7 +159,7 @@ jobs:
           KEY: Windows-${{ env.arc }}-${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
 
-      - name: [${{ env.arc }}] Save cache
+      - name: ${{ env.arc }} / Save cache
         if: steps.verifycache${{ env.arc }}.outputs.cache == 'invalid'
         uses: actions/cache/save@v4
         with:
