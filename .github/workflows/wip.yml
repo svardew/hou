@@ -72,6 +72,7 @@ jobs:
           u=${u//\%SODIUM_VER\%/$ver}; f=${u/*-RELEASE\//}
           echo "SODIUM_MINGW_URL=$u" >> $GITHUB_OUTPUT
           echo "SODIUM_MINGW_FILE=$f" >> $GITHUB_OUTPUT
+          echo "### SetupEnv :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           arc: all
           GH_TOKEN: ${{ github.token }}
@@ -83,6 +84,7 @@ jobs:
           echo ${{ env.WINPTY_URL }} >> urls.txt
           echo ${{ env.SODIUM_VER }} >> urls.txt
           sed -i 's/$/\r/g' urls.txt
+          echo "### CreateKeyfile :rocket:" >> $GITHUB_STEP_SUMMARY
 
       # Arch all
       - name: ${{ env.arc }} / Restore Cache
@@ -109,6 +111,7 @@ jobs:
           else
             echo "cache=valid" >> $GITHUB_OUTPUT
           fi
+          echo "### VerifyCache :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           arc: all
 
@@ -117,6 +120,7 @@ jobs:
         run: |
           echo "repository cache is fine."
           echo ${{ env.KEY }}
+          echo "### NotUpdateCache :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           arc: all
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -140,6 +144,7 @@ jobs:
           dlf2 ${{ steps.env.outputs.SODIUM_MINGW_URL }} ${{ steps.env.outputs.SODIUM_MINGW_FILE }}
           echo '// check md5sum'
           md5sum -c ../MD5SUMS-${{ env.arc }}
+          echo "### DownloadDeps :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           arc: all
 
@@ -154,6 +159,7 @@ jobs:
               gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
             fi
           done
+          echo "### DeleteRepoCache :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           arc: all
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -175,4 +181,5 @@ jobs:
 
       - name: finish job
         run: |
+          echo "### FinishJob :rocket:" >> $GITHUB_STEP_SUMMARY
           exit 0
