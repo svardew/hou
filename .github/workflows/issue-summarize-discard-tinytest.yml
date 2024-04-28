@@ -555,7 +555,7 @@ jobs:
 
           :downloadfile
           :: call :downloadfile <URL> <localfile>
-          if not exist %2 (
+          if exist %2 (
             echo Skip Download. %2
           )
           if not exist %2 (
