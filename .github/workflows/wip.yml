@@ -190,7 +190,7 @@ jobs:
         run: |
           mv downloads cache-all
           test -d cache-x86 && rm -rf cache-x86
-          cp -R cache-all cache-x86
+          cp -Rvn cache-all cache-x86
           cd cache-x86
           rm ${{ steps.env.outputs.LUA64_FILE }}
           mv ${{ steps.env.outputs.LUA32_FILE }}  lua.zip
@@ -199,7 +199,7 @@ jobs:
           mv ${{ steps.env.outputs.SODIUM_MINGW_FILE }} libsodium.tar.gz
           cd ../
           test -d cache-x64 && rm -rf cache-x64
-          cp -R cache-all cache-x64
+          cp -Rvn cache-all cache-x64
           cd cache-x64
           rm ${{ steps.env.outputs.LUA32_FILE }}
           mv ${{ steps.env.outputs.LUA64_FILE }}  lua.zip
@@ -266,7 +266,7 @@ jobs:
           enableCrossOsArchive: true
           key: ${{ env.os }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
         env:
-          arc: 64
+          arc: x64
           os: Windows
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
