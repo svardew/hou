@@ -39,7 +39,6 @@ jobs:
         id: env
         run: |
           test -d downloads || mkdir downloads
-          test -d cache-${{ env.arc }} || mkdir cache-${{ env.arc }}
           gh extension install actions/gh-actions-cache
           # checksum
           touch MD5SUMS-${{ env.arc }}
@@ -104,6 +103,8 @@ jobs:
         continue-on-error: true
         shell: bash {0}
         run: |
+          test -d cache-${{ env.arc }} && rm -rf cache-${{ env.arc }}
+          test -d cache-${{ env.arc }} || mkdir cache-${{ env.arc }}
           find downloads -type f -exec cp \{\} ./cache-${{ env.arc }} \;
           cd ./cache-${{ env.arc }}
           md5sum -c ../MD5SUMS-${{ env.arc }}
@@ -188,16 +189,20 @@ jobs:
       # force update cache both x86 and x64
       - name: Prepare deps
         run: |
-          mv downloads cache-all
+          test -d cache-all && rm -rf cache-all
+          test -d cache-all || mkdir cache-all
+          find downloads -type f -exec cp \{\} ./cache-all \;
+          # x86
           test -d cache-x86 && rm -rf cache-x86
           cp -Rvn cache-all cache-x86
           cd cache-x86
-          rm ${{ steps.env.outputs.LUA64_FILE }}
           mv ${{ steps.env.outputs.LUA32_FILE }}  lua.zip
+          rm ${{ steps.env.outputs.LUA64_FILE }}
           mv ${{ steps.env.outputs.WINPTY_FILE }} winpty.zip
           mv ${{ steps.env.outputs.SODIUM_MSVC_FILE }}  libsodium.zip
           mv ${{ steps.env.outputs.SODIUM_MINGW_FILE }} libsodium.tar.gz
           cd ../
+          # x64
           test -d cache-x64 && rm -rf cache-x64
           cp -Rvn cache-all cache-x64
           cd cache-x64
