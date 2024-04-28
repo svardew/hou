@@ -185,6 +185,92 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
 
+      # force update cache both x86 and x64
+      - name: Prepare deps
+        run: |
+          mv downloads cache-all
+          test -d cache-x86 && rm -rf cache-x86
+          cp -R cache-all cache-x86
+          cd cache-x86
+          rm ${{ steps.env.outputs.LUA64_FILE }}
+          mv ${{ steps.env.outputs.LUA32_FILE }}  lua.zip
+          mv ${{ steps.env.outputs.WINPTY_FILE }} winpty.zip
+          mv ${{ steps.env.outputs.SODIUM_MSVC_FILE }}  libsodium.zip
+          mv ${{ steps.env.outputs.SODIUM_MINGW_FILE }} libsodium.tar.gz
+          cd ../
+          test -d cache-x64 && rm -rf cache-x64
+          cp -R cache-all cache-x64
+          cd cache-x64
+          rm ${{ steps.env.outputs.LUA32_FILE }}
+          mv ${{ steps.env.outputs.LUA64_FILE }}  lua.zip
+          mv ${{ steps.env.outputs.WINPTY_FILE }} winpty.zip
+          mv ${{ steps.env.outputs.SODIUM_MSVC_FILE }}  libsodium.zip
+          mv ${{ steps.env.outputs.SODIUM_MINGW_FILE }} libsodium.tar.gz
+          cd ../
+
+      - name: Delete repository cache
+        run: |
+          caches=$(gh actions-cache list -R ${{ env.REPO }} | cut -f1)
+          key86=${{ env.os }}-x86-${{ hashFiles('urls.txt') }}
+          key64=${{ env.os }}-x64-${{ hashFiles('urls.txt') }}
+          for ky in $caches
+          do
+            if [ "$ky" = "$key86" ]; then
+              echo "repository cache exist. delete cache" $key86
+              gh actions-cache delete $key86 -R ${{ env.REPO }} --confirm
+            elif [ "$ky" = "$key64" ]; then
+              echo "repository cache exist. delete cache" $key64
+              gh actions-cache delete $key64 -R ${{ env.REPO }} --confirm
+            fi
+          done
+          echo "### DeleteRepoCache :rocket:" >> $GITHUB_STEP_SUMMARY
+        env:
+          os: Windows
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+
+      # x86
+      - name: ${{ env.arc }} / rename cachedir
+        run: |
+          test -d downloads && rm -rf downloads
+          mv cache-${{ env.arc }} downloads
+        env:
+          os: Windows
+          arc: x86
+
+      - name: ${{ env.arc }} / Save cache
+        uses: actions/cache/save@v4
+        with:
+          path: downloads
+          enableCrossOsArchive: true
+          key: ${{ env.os }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+        env:
+          arc: x86
+          os: Windows
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+
+      # x64
+      - name: ${{ env.arc }} / rename cachedir
+        run: |
+          test -d downloads && rm -rf downloads
+          mv cache-${{ env.arc }} downloads
+        env:
+          os: Windows
+          arc: x64
+
+      - name: ${{ env.arc }} / Save cache
+        uses: actions/cache/save@v4
+        with:
+          path: downloads
+          enableCrossOsArchive: true
+          key: ${{ env.os }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+        env:
+          arc: 64
+          os: Windows
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+
       - name: finish job
         run: |
           echo "### FinishJob :rocket:" >> $GITHUB_STEP_SUMMARY
