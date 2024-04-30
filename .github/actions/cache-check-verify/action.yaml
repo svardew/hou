@@ -16,7 +16,7 @@ runs:
         with:
           enableCrossOsArchive: true
           path: downloads
-          key: ${{ inputs.key }}
+          key: ${{ inputs.restorekey }}
     - name: display md5sum, files
       shell: bash
       run: |
