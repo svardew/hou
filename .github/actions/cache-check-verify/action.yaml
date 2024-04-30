@@ -33,13 +33,6 @@ runs:
           enableCrossOsArchive: true
           path: downloads
           key: ${{ inputs.operatingsystem }}-${{ inputs.architecture }}-${{ hashFiles('urls.txt') }}
-        env:
-          os: ${{ inputs.operatingsystem }}
-          arc: ${{ inputs.architecture }}
-          ky: ${{ hashFiles('urls.txt') }}
-          keyfile: ${{ inputs.keyfile }}
-          key: ${{ hashFiles(${{ inputs.keyfile }}) }}
-          REPO: ${{ github.repository }}
     - name: Verify cache /${{ env.arc }}
       id: verifycache
       continue-on-error: true
@@ -92,3 +85,6 @@ runs:
         keyfile: ${{ inputs.keyfile }}
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         REPO: ${{ github.repository }}
+        ky: ${{ hashFiles('urls.txt') }}
+        key: ${{ hashFiles(${{ inputs.keyfile }}) }}
+
