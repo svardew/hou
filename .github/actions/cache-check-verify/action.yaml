@@ -4,6 +4,9 @@ inputs:
   restorekey:
     default: 'Windows-zzz-d41d8cd98f00b204e9800998ecf8427e'
     required: true
+  architetcure:
+    default: 'all'
+    required: false
 runs:
   using: "composite" # caller os is ubuntu-xxx
   steps:
@@ -20,33 +23,25 @@ runs:
         ls downloads -1
         echo '/* passed md5sum lines */'
         cat MD5SUMS
-    - name: Force exit
-      shell: bash
+    - name: Verify cache
+      id: verifycache
+      continue-on-error: true
+      shell: bash {0}
       run: |
-        echo Force EXIT
-        exit 1
-#--     - name: Verify cache /${{ env.arc }}
-#--       id: verifycache
-#--       continue-on-error: true
-#--       shell: bash {0}
-#--       run: |
-#--         test -d cache-${{ env.arc }} && rm -rf cache-${{ env.arc }}
-#--         test -d cache-${{ env.arc }} || mkdir cache-${{ env.arc }}
-#--         find downloads -type f -exec cp \{\} ./cache-${{ env.arc }} \;
-#--         echo "${{ inputs.md5sums }}" > MD5SUMS-${{ env.arc }}
-#--         cd ./cache-${{ env.arc }}
-#--         md5sum -c ../MD5SUMS-${{ env.arc }}
-#--         if [ $? -gt 0 ]; then
-#--           echo "cache=invalid" >> $GITHUB_OUTPUT
-#--         else
-#--           echo "cache=valid" >> $GITHUB_OUTPUT
-#--         fi
-#--         echo "### VerifyCache :rocket:" >> $GITHUB_STEP_SUMMARY
-#--       env:
-#--         arc: ${{ inputs.architecture }}
-#--         os: Windows
-#--         keyfile: ${{ inputs.keyfile }}
-#--         REPO: ${{ github.repository }}
+        cachedir=cache-${{ inputs.architecture }}
+        test -d $cachedir && rm -rf $cachedir
+        test -d $cachedir || mkdir $cachedir
+        find downloads -type f -exec cp \{\} ./$cachedir \;
+        cd ./$cachedir
+        md5sum -c ../MD5SUMS
+        if [ $? -gt 0 ]; then
+          echo "cache=invalid" >> $GITHUB_OUTPUT
+          echo "cache=invalid"
+        else
+          echo "cache=valid" >> $GITHUB_OUTPUT
+          echo "cache=valid"
+        fi
+        echo "### VerifyCache :rocket:" >> $GITHUB_STEP_SUMMARY
 #--     - name: show result /${{ env.arc }}
 #--       shell: bash
 #--       run: |
