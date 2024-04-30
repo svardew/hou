@@ -5,18 +5,17 @@ inputs:
     default: 'd41d8cd98f00b204e9800998ecf8427e  ...multline-string...'
     required: false
   restorekey:
+    default: 'Windows-all-d41d8cd98f00b204e9800998ecf8427e'
     required: true
-env:
-  WINPTY_URL: 'https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip'
 runs:
   using: "composite" # caller os is ubuntu-xxx
   steps:
     - name: Restore cache
       uses: actions/cache/restore@v4
-        with:
-          enableCrossOsArchive: true
-          path: downloads
-          key: ${{ inputs.restorekey }}
+      with:
+        enableCrossOsArchive: true
+        path: downloads
+        key: ${{ inputs.restorekey }}
     - name: display md5sum, files
       shell: bash
       run: |
