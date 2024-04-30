@@ -37,7 +37,7 @@ runs:
           echo "### VerifyCache :rocket:" >> $GITHUB_STEP_SUMMARY
           echo "cache='invalid ${{ inputs.architecture }}'" >> $GITHUB_STEP_SUMMARY
         else
-          echo "cache='valid ${{ inputs.architecture }}" >> $GITHUB_OUTPUT
+          echo "cache='valid ${{ inputs.architecture }}'" >> $GITHUB_OUTPUT
           echo "### VerifyCache :rocket:" >> $GITHUB_STEP_SUMMARY
           echo "cache='valid ${{ inputs.architecture }}'" >> $GITHUB_STEP_SUMMARY
         fi
