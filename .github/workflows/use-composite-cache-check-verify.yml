@@ -46,6 +46,7 @@ jobs:
           #
           file urls.txt
           cat urls.txt
+
       - name: composite-action ${{ env.architecture }}
         id: verify-all
         uses: ./.github/actions/cache-check-verify
@@ -55,5 +56,27 @@ jobs:
         env:
           architecture: 'all'
 
+      - name: composite-action ${{ env.architecture }}
+        id: verify-x86
+        uses: ./.github/actions/cache-check-verify
+        with:
+          restorekey: Windows-x86-${{ hashFiles('urls.txt') }}
+          architecture: 'x86'
+        env:
+          architecture: 'x86'
 
+      - name: composite-action ${{ env.architecture }}
+        id: verify-x64
+        uses: ./.github/actions/cache-check-verify
+        with:
+          restorekey: Windows-x64-${{ hashFiles('urls.txt') }}
+          architecture: 'x64'
+        env:
+          architecture: 'x64'
+
+      - name: show summary
+        run: |
+          echo ${{ steps.verify-all.outputs.cache }}
+          echo ${{ steps.verify-x86.outputs.cache }}
+          echo ${{ steps.verify-x64.outputs.cache }}
 
