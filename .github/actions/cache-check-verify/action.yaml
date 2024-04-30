@@ -26,20 +26,19 @@ runs:
         echo '5.4.2' >> urls.txt
         echo ${{ env.WINPTY_URL }} >> urls.txt
         echo  '1.0.19' >> urls.txt
-        sed -i 's/$/\r/g' urls.txt
 
     - name: Restore cache /${{ env.arc }}
       uses: actions/cache/restore@v4
         with:
           enableCrossOsArchive: true
           path: downloads
-          # key: ${{ env.os }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
-          key: ${{ env.os }}-${{ env.arc }}-${{ env.key }}
+          key: ${{ env.os }}-${{ env.arc }}-${{ env.ky }}
         env:
           arc: ${{ inputs.architecture }}
           os: Windows
+          ky: ${{ hashFiles('urls.txt') }}
           keyfile: ${{ inputs.keyfile }}
-          key: ${{ hashFiles('urls.txt') }}
+          key: ${{ hashFiles(${{ inputs.keyfile }}) }}
           REPO: ${{ github.repository }}
 
     - name: Verify cache /${{ env.arc }}
