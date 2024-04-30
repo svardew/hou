@@ -11,18 +11,18 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.repository }}
+          repository: svardew/vim
       - name: init
         id: init
         shell: bash {0}
         run: |
+          test -d downloads || mkdir downloads
           touch urls.txt && truncate --size 0 urls.txt
-          touch MD5SUMS
           echo '5.4.2' >> urls.txt
           echo ${{ env.WINPTY_URL }} >> urls.txt
           echo '1.0.19' >> urls.txt
-          restorekey=Windows-all-key-${{ hashFiles('urls.txt') }}
-          echo "restorekey=$restorekey" >> $GITHUB_OUTPUT
+          sed -i 's/$/\r/g' urls.txt
+          touch MD5SUMS
           cat <<EOF > MD5SUMS
           25b07e2b5177a2f071f109f641f9e3e4  lua-5.4.2_Win32_dllw6_lib.zip
           132834e89206d893630410fa2192bd2a  lua-5.4.2_Win64_dllw6_lib.zip
@@ -37,8 +37,7 @@ jobs:
       - name: composite-action
         uses: ./.github/actions/cache-check-verify
         with:
-          restorekey: ${{ steps.init.outputs.restorekey }}
-          md5sums: ${{ steps.init.outputs.md5sum }}
+          restorekey: Windows-all-${{ hashFiles('urls.txt') }}
 
 
 

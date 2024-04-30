@@ -2,7 +2,7 @@ name: "composie action. check and verify cache."
 description: "Check cache"
 inputs:
   restorekey:
-    default: 'Windows-all-d41d8cd98f00b204e9800998ecf8427e'
+    default: 'Windows-zzz-d41d8cd98f00b204e9800998ecf8427e'
     required: true
 runs:
   using: "composite" # caller os is ubuntu-xxx
@@ -20,6 +20,10 @@ runs:
         ls downloads -1
         echo '/* passed md5sum lines */'
         cat MD5SUMS
+    - name: Force exit
+      shell: bash
+      run: |
+        echo Force EXIT
         exit 1
 #--     - name: Verify cache /${{ env.arc }}
 #--       id: verifycache
