@@ -8,6 +8,7 @@ inputs:
     required: false
 runs:
   using: "composite" # caller os is ubuntu-xxx
+
   steps:
     - name: Restore cache
       uses: actions/cache/restore@v4
@@ -15,37 +16,26 @@ runs:
         enableCrossOsArchive: true
         path: downloads
         key: ${{ inputs.restorekey }}
-    - name: display md5sum, files
-      shell: bash
-      run: |
-        echo '/* restored files */'
-        ls downloads -1
-        echo '/* passed md5sum lines */'
-        cat MD5SUMS
+
     - name: Verify cache
-      id: verifycache
       continue-on-error: true
       shell: bash {0}
       run: |
-        echo ${{ inputs.architecture }}
-        foo=cache-${{ inputs.architecture }}
-        echo $foo
-      #  cachedir=cache-${{ env.cachedir_ }}
-      #  test -d $cachedir && rm -rf $cachedir
-      #  test -d $cachedir || mkdir $cachedir
-      #  find downloads -type f -exec cp \{\} ./$cachedir \;
-      #  cd ./$cachedir
-      #  md5sum -c ../MD5SUMS
-      #  if [ $? -gt 0 ]; then
-      #    echo "cache=invalid" >> $GITHUB_OUTPUT
-      #    echo "cache=invalid"
-      #  else
-      #    echo "cache=valid" >> $GITHUB_OUTPUT
-      #    echo "cache=valid"
-      #  fi
-      #  echo "### VerifyCache :rocket:" >> $GITHUB_STEP_SUMMARY
-      env:
-        cachedir_: cache-${{ inputs.architecture }}
+        cachedir=cache-${{ inputs.architecture }}
+        test -d $cachedir && rm -rf $cachedir
+        test -d $cachedir || mkdir $cachedir
+        find downloads -type f -exec cp \{\} ./$cachedir \;
+        cd ./$cachedir
+        md5sum -c ../MD5SUMS-${{ inputs.architecture }}
+        if [ $? -gt 0 ]; then
+          echo "cache=invalid" >> $GITHUB_OUTPUT
+          echo "### VerifyCache :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "cache=invalid" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "cache=valid" >> $GITHUB_OUTPUT
+          echo "### VerifyCache :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "cache=valid" >> $GITHUB_STEP_SUMMARY
+        fi
 #--     - name: show result /${{ env.arc }}
 #--       shell: bash
 #--       run: |

@@ -22,23 +22,38 @@ jobs:
           echo ${{ env.WINPTY_URL }} >> urls.txt
           echo '1.0.19' >> urls.txt
           sed -i 's/$/\r/g' urls.txt
+          # checksum
           touch MD5SUMS
-          cat <<EOF > MD5SUMS
+          cat <<EOF > MD5SUMS-all
           25b07e2b5177a2f071f109f641f9e3e4  lua-5.4.2_Win32_dllw6_lib.zip
           132834e89206d893630410fa2192bd2a  lua-5.4.2_Win64_dllw6_lib.zip
           a0f941c53b8e509712eeca46104674c4  winpty-0.4.3-msvc2015.zip
           2a0669a0596b7d8b8b2b9a775b479132  libsodium-1.0.19-mingw.tar.gz
           38db0856f7e3f9679f5e61c80632aac2  libsodium-1.0.19-msvc.zip
           EOF
+          cat <<EOF > MD5SUMS-x86
+          25b07e2b5177a2f071f109f641f9e3e4  lua.zip
+          a0f941c53b8e509712eeca46104674c4  winpty.zip
+          2a0669a0596b7d8b8b2b9a775b479132  libsodium.tar.gz
+          38db0856f7e3f9679f5e61c80632aac2  libsodium.zip
+          EOF
+          cat <<EOF > MD5SUMS-x64
+          132834e89206d893630410fa2192bd2a  lua.zip
+          a0f941c53b8e509712eeca46104674c4  winpty.zip
+          2a0669a0596b7d8b8b2b9a775b479132  libsodium.tar.gz
+          38db0856f7e3f9679f5e61c80632aac2  libsodium.zip
+          EOF
           #
           file urls.txt
           cat urls.txt
-          cat MD5SUMS
-      - name: composite-action
+      - name: composite-action ${{ env.architecture }}
+        id: verify-all
         uses: ./.github/actions/cache-check-verify
         with:
           restorekey: Windows-all-${{ hashFiles('urls.txt') }}
-          architecture: all
+          architecture: 'all'
+        env:
+          architecture: 'all'
 
 
 
