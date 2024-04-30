@@ -6,6 +6,10 @@ inputs:
   architecture:
     default: 'all'
     required: false
+outputs:
+  cachestatus:
+    description: "result of steps.[Veirfy Cache]"
+    value: ${{ steps.verifycache.outputs.cache }}
 runs:
   using: "composite" # caller os is ubuntu-xxx
 
@@ -18,6 +22,7 @@ runs:
         key: ${{ inputs.restorekey }}
 
     - name: Verify cache
+      id: verifycache
       continue-on-error: true
       shell: bash {0}
       run: |
@@ -28,13 +33,13 @@ runs:
         cd ./$cachedir
         md5sum -c ../MD5SUMS-${{ inputs.architecture }}
         if [ $? -gt 0 ]; then
-          echo "cache=invalid" >> $GITHUB_OUTPUT
+          echo "cache='invalid ${{ inputs.architecture }}'" >> $GITHUB_OUTPUT
           echo "### VerifyCache :rocket:" >> $GITHUB_STEP_SUMMARY
-          echo "cache=invalid" >> $GITHUB_STEP_SUMMARY
+          echo "cache='invalid ${{ inputs.architecture }}'" >> $GITHUB_STEP_SUMMARY
         else
-          echo "cache=valid" >> $GITHUB_OUTPUT
+          echo "cache='valid ${{ inputs.architecture }}" >> $GITHUB_OUTPUT
           echo "### VerifyCache :rocket:" >> $GITHUB_STEP_SUMMARY
-          echo "cache=valid" >> $GITHUB_STEP_SUMMARY
+          echo "cache='valid ${{ inputs.architecture }}'" >> $GITHUB_STEP_SUMMARY
         fi
 #--     - name: show result /${{ env.arc }}
 #--       shell: bash
