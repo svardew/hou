@@ -21,6 +21,7 @@ runs:
   # runs-on: ubuntu-latest
   steps:
     - name: init
+      shell: bash
       run: |
         touch urls.txt && truncate --size 0 urls.txt
         echo '5.4.2' >> urls.txt
@@ -65,11 +66,13 @@ runs:
         REPO: ${{ github.repository }}
 
     - name: show result /${{ env.arc }}
+      shell: bash
       run: |
         echo 'cache status:' ${{ steps.verifycache.outputs.cache }}
 
     - name: ${{ env.arc }} / Use current cache
       if: steps.verifycache.outputs.cache == 'valid'
+      shell: bash
       run: |
         echo "repository cache is fine."
         echo "KEY: ${{ env.os }}-${{ env.arc }}-${{ hashFiles($keyfile) }}"
@@ -83,6 +86,7 @@ runs:
 
     - name: ${{ env.arc }} / todo Download missing dependencies
       if: steps.verifycache.outputs.cache == 'invalid'
+      shell: bash
       run: |
         echo "repository cache is bad."
         echo "KEY: ${{ env.os }}-${{ env.arc }}-${{ hashFiles($keyfile) }}"
