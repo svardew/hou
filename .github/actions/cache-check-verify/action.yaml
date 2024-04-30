@@ -24,11 +24,12 @@ runs:
           enableCrossOsArchive: true
           path: downloads
           # key: ${{ env.os }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
-          key: ${{ env.os }}-${{ env.arc }}-${{ hashFiles(${{ env.keyfile }}) }}
+          key: ${{ env.os }}-${{ env.arc }}-${{ env.keyfile }}
         env:
           arc: ${{ inputs.architecture }}
           os: Windows
           keyfile: ${{ inputs.keyfile }}
+          key: ${{ hashFiles(${{ inputs.keyfile }}) }}
           REPO: ${{ github.repository }}
 
     - name: Verify cache /${{ env.arc }}
