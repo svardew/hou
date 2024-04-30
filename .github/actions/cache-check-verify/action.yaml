@@ -23,7 +23,7 @@ runs:
         echo '/* restored files */'
         ls downloads -1
         echo '/* passed md5sum lines */'
-        echo ${{ inputs.md5sum }}
+        cat MD5SUMS
         exit 1
     - name: Verify cache /${{ env.arc }}
       id: verifycache

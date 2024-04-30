@@ -1,6 +1,8 @@
 name: call composite-action
 on:
   workflow_dispatch:
+env:
+  WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
 
 jobs:
   composite_test:
@@ -12,23 +14,26 @@ jobs:
           repository: ${{ github.repository }}
       - name: init
         id: init
+        shell: bash {0}
         run: |
           touch urls.txt && truncate --size 0 urls.txt
+          touch MD5SUMS
           echo '5.4.2' >> urls.txt
           echo ${{ env.WINPTY_URL }} >> urls.txt
-          echo  '1.0.19' >> urls.txt
-          echo "restorekey=Windows-all-${{ hashFiles('urls.txt') }}" >> $GITHUB_OUTPUT
-          {
-            echo 'md5sum<<EOF'
-            25b07e2b5177a2f071f109f641f9e3e4  lua-5.4.2_Win32_dllw6_lib.zip
-            132834e89206d893630410fa2192bd2a  lua-5.4.2_Win64_dllw6_lib.zip
-            a0f941c53b8e509712eeca46104674c4  winpty-0.4.3-msvc2015.zip
-            2a0669a0596b7d8b8b2b9a775b479132  libsodium-1.0.19-mingw.tar.gz
-            38db0856f7e3f9679f5e61c80632aac2  libsodium-1.0.19-msvc.zip
-            echo EOF
-          } >> $GITHUB_OUTPUT
+          echo '1.0.19' >> urls.txt
+          restorekey=Windows-all-key-${{ hashFiles('urls.txt') }}
+          echo "restorekey=$restorekey" >> $GITHUB_OUTPUT
+          cat <<EOF > MD5SUMS
+          25b07e2b5177a2f071f109f641f9e3e4  lua-5.4.2_Win32_dllw6_lib.zip
+          132834e89206d893630410fa2192bd2a  lua-5.4.2_Win64_dllw6_lib.zip
+          a0f941c53b8e509712eeca46104674c4  winpty-0.4.3-msvc2015.zip
+          2a0669a0596b7d8b8b2b9a775b479132  libsodium-1.0.19-mingw.tar.gz
+          38db0856f7e3f9679f5e61c80632aac2  libsodium-1.0.19-msvc.zip
+          EOF
+          #
           file urls.txt
           cat urls.txt
+          cat MD5SUMS
       - name: composite-action
         uses: ./.github/actions/cache-check-verify
         with:
