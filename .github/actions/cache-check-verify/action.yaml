@@ -4,7 +4,7 @@ inputs:
   restorekey:
     default: 'Windows-zzz-d41d8cd98f00b204e9800998ecf8427e'
     required: true
-  architetcure:
+  architecture:
     default: 'all'
     required: false
 runs:
