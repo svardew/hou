@@ -11,7 +11,7 @@ jobs:
       - name: checkout repository
         uses: actions/checkout@v4
         with:
-          repository: svardew/vim
+          repository: ${{ github.repository }}
       - name: init
         id: init
         shell: bash {0}
