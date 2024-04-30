@@ -12,24 +12,34 @@ inputs:
   keyfile:
     default: 'urls.txt'
     required: false
+env:
+  WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
 
 runs:
   using: "composite"
 
   # runs-on: ubuntu-latest
   steps:
+    - name: init
+      run: |
+        touch urls.txt && truncate --size 0 urls.txt
+        echo '5.4.2' >> urls.txt
+        echo ${{ env.WINPTY_URL }} >> urls.txt
+        echo  '1.0.19' >> urls.txt
+        sed -i 's/$/\r/g' urls.txt
+
     - name: Restore cache /${{ env.arc }}
       uses: actions/cache/restore@v4
         with:
           enableCrossOsArchive: true
           path: downloads
           # key: ${{ env.os }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
-          key: ${{ env.os }}-${{ env.arc }}-${{ env.keyfile }}
+          key: ${{ env.os }}-${{ env.arc }}-${{ env.key }}
         env:
           arc: ${{ inputs.architecture }}
           os: Windows
           keyfile: ${{ inputs.keyfile }}
-          key: ${{ hashFiles(${{ inputs.keyfile }}) }}
+          key: ${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
 
     - name: Verify cache /${{ env.arc }}
