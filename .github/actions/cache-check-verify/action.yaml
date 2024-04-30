@@ -1,24 +1,22 @@
 name: "composie action. check and verify cache."
-#name:"compoiste action. delete and save cache."
 description: "Check cache"
-
 inputs:
+  operatingsystem:
+    default: 'Windows'
+    required: false
   architecture:
-    default: all
+    default: 'all'
     required: false
   md5sums:
-    # multiline string
-    required: true
+    default: 'd41d8cd98f00b204e9800998ecf8427e  ...multline-string...'
+    required: false
   keyfile:
     default: 'urls.txt'
     required: false
 env:
   WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
-
 runs:
-  using: "composite"
-
-  # runs-on: ubuntu-latest
+  using: "composite" # caller os is ubuntu-xxx
   steps:
     - name: init
       shell: bash
@@ -27,21 +25,21 @@ runs:
         echo '5.4.2' >> urls.txt
         echo ${{ env.WINPTY_URL }} >> urls.txt
         echo  '1.0.19' >> urls.txt
-
+        file urls.txt
+        cat urls.txt
     - name: Restore cache /${{ env.arc }}
       uses: actions/cache/restore@v4
         with:
           enableCrossOsArchive: true
           path: downloads
-          key: ${{ env.os }}-${{ env.arc }}-${{ env.ky }}
+          key: ${{ inputs.operatingsystem }}-${{ inputs.architecture }}-${{ hashFiles('urls.txt') }}
         env:
+          os: ${{ inputs.operatingsystem }}
           arc: ${{ inputs.architecture }}
-          os: Windows
           ky: ${{ hashFiles('urls.txt') }}
           keyfile: ${{ inputs.keyfile }}
           key: ${{ hashFiles(${{ inputs.keyfile }}) }}
           REPO: ${{ github.repository }}
-
     - name: Verify cache /${{ env.arc }}
       id: verifycache
       continue-on-error: true
@@ -64,12 +62,10 @@ runs:
         os: Windows
         keyfile: ${{ inputs.keyfile }}
         REPO: ${{ github.repository }}
-
     - name: show result /${{ env.arc }}
       shell: bash
       run: |
         echo 'cache status:' ${{ steps.verifycache.outputs.cache }}
-
     - name: ${{ env.arc }} / Use current cache
       if: steps.verifycache.outputs.cache == 'valid'
       shell: bash
@@ -83,7 +79,6 @@ runs:
         keyfile: ${{ inputs.keyfile }}
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         REPO: ${{ github.repository }}
-
     - name: ${{ env.arc }} / todo Download missing dependencies
       if: steps.verifycache.outputs.cache == 'invalid'
       shell: bash
@@ -97,4 +92,3 @@ runs:
         keyfile: ${{ inputs.keyfile }}
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         REPO: ${{ github.repository }}
-
