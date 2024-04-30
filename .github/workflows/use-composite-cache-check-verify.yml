@@ -10,6 +10,30 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository }}
+      - name: init
+        id: init
+        run: |
+          touch urls.txt && truncate --size 0 urls.txt
+          echo '5.4.2' >> urls.txt
+          echo ${{ env.WINPTY_URL }} >> urls.txt
+          echo  '1.0.19' >> urls.txt
+          echo "restorekey=Windows-all-${{ hasFiles('urls.txt') }}" >> $GITHUB_OUTPUT
+          {
+            echo 'md5sum<<EOF'
+            25b07e2b5177a2f071f109f641f9e3e4  lua-5.4.2_Win32_dllw6_lib.zip
+            132834e89206d893630410fa2192bd2a  lua-5.4.2_Win64_dllw6_lib.zip
+            a0f941c53b8e509712eeca46104674c4  winpty-0.4.3-msvc2015.zip
+            2a0669a0596b7d8b8b2b9a775b479132  libsodium-1.0.19-mingw.tar.gz
+            38db0856f7e3f9679f5e61c80632aac2  libsodium-1.0.19-msvc.zip
+            echo EOF
+          } >> $GITHUB_OUTPUT
+          file urls.txt
+          cat urls.txt
       - name: composite-action
         uses: ./.github/actions/cache-check-verify
+        with:
+          key: ${{ steps.init.outputs.restorekey }}
+          md5sum: ${{ steps.init.outputs.md5sum }}
+
+
 

@@ -1,38 +1,30 @@
 name: "composie action. check and verify cache."
 description: "Check cache"
 inputs:
-  operatingsystem:
-    default: 'Windows'
-    required: false
-  architecture:
-    default: 'all'
-    required: false
   md5sums:
     default: 'd41d8cd98f00b204e9800998ecf8427e  ...multline-string...'
     required: false
-  keyfile:
-    default: 'urls.txt'
-    required: false
+  restorekey:
+    required: true
 env:
   WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
 runs:
   using: "composite" # caller os is ubuntu-xxx
   steps:
-    - name: init
-      shell: bash
-      run: |
-        touch urls.txt && truncate --size 0 urls.txt
-        echo '5.4.2' >> urls.txt
-        echo ${{ env.WINPTY_URL }} >> urls.txt
-        echo  '1.0.19' >> urls.txt
-        file urls.txt
-        cat urls.txt
     - name: Restore cache /${{ env.arc }}
       uses: actions/cache/restore@v4
         with:
           enableCrossOsArchive: true
           path: downloads
-          key: ${{ inputs.operatingsystem }}-${{ inputs.architecture }}-${{ hashFiles('urls.txt') }}
+          key: ${{ inputs.key }}
+    - name: display md5sum, files
+      shell: bash
+      run: |
+        echo '/* restored files */'
+        ls downloads -1
+        echo '/* passed md5sum lines */'
+        echo ${{ inputs.md5sum }}
+        exit 1
     - name: Verify cache /${{ env.arc }}
       id: verifycache
       continue-on-error: true
