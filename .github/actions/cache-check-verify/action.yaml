@@ -1,9 +1,6 @@
 name: "composie action. check and verify cache."
 description: "Check cache"
 inputs:
-  md5sums:
-    default: 'd41d8cd98f00b204e9800998ecf8427e  ...multline-string...'
-    required: false
   restorekey:
     default: 'Windows-all-d41d8cd98f00b204e9800998ecf8427e'
     required: true

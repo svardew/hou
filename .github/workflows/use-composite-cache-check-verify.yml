@@ -37,8 +37,8 @@ jobs:
       - name: composite-action
         uses: ./.github/actions/cache-check-verify
         with:
-          key: ${{ steps.init.outputs.restorekey }}
-          md5sum: ${{ steps.init.outputs.md5sum }}
+          restorekey: ${{ steps.init.outputs.restorekey }}
+          md5sums: ${{ steps.init.outputs.md5sum }}
 
 
 
