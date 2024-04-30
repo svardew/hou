@@ -27,9 +27,9 @@ runs:
       continue-on-error: true
       shell: bash {0}
       run: |
-      echo ${{ inputs.architecture }}
-      foo=cache-${{ inputs.architecture }}
-      echo $foo
+        echo ${{ inputs.architecture }}
+        foo=cache-${{ inputs.architecture }}
+        echo $foo
       #  cachedir=cache-${{ env.cachedir_ }}
       #  test -d $cachedir && rm -rf $cachedir
       #  test -d $cachedir || mkdir $cachedir
