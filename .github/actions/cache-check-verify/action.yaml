@@ -7,11 +7,11 @@ inputs:
   restorekey:
     required: true
 env:
-  WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+  WINPTY_URL: 'https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip'
 runs:
   using: "composite" # caller os is ubuntu-xxx
   steps:
-    - name: Restore cache /${{ env.arc }}
+    - name: Restore cache
       uses: actions/cache/restore@v4
         with:
           enableCrossOsArchive: true
@@ -25,58 +25,58 @@ runs:
         echo '/* passed md5sum lines */'
         cat MD5SUMS
         exit 1
-    - name: Verify cache /${{ env.arc }}
-      id: verifycache
-      continue-on-error: true
-      shell: bash {0}
-      run: |
-        test -d cache-${{ env.arc }} && rm -rf cache-${{ env.arc }}
-        test -d cache-${{ env.arc }} || mkdir cache-${{ env.arc }}
-        find downloads -type f -exec cp \{\} ./cache-${{ env.arc }} \;
-        echo "${{ inputs.md5sums }}" > MD5SUMS-${{ env.arc }}
-        cd ./cache-${{ env.arc }}
-        md5sum -c ../MD5SUMS-${{ env.arc }}
-        if [ $? -gt 0 ]; then
-          echo "cache=invalid" >> $GITHUB_OUTPUT
-        else
-          echo "cache=valid" >> $GITHUB_OUTPUT
-        fi
-        echo "### VerifyCache :rocket:" >> $GITHUB_STEP_SUMMARY
-      env:
-        arc: ${{ inputs.architecture }}
-        os: Windows
-        keyfile: ${{ inputs.keyfile }}
-        REPO: ${{ github.repository }}
-    - name: show result /${{ env.arc }}
-      shell: bash
-      run: |
-        echo 'cache status:' ${{ steps.verifycache.outputs.cache }}
-    - name: ${{ env.arc }} / Use current cache
-      if: steps.verifycache.outputs.cache == 'valid'
-      shell: bash
-      run: |
-        echo "repository cache is fine."
-        echo "KEY: ${{ env.os }}-${{ env.arc }}-${{ hashFiles($keyfile) }}"
-        echo "### NotUpdateCache :rocket:" >> $GITHUB_STEP_SUMMARY
-      env:
-        arc: ${{ inputs.architecture }}
-        os: Windows
-        keyfile: ${{ inputs.keyfile }}
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        REPO: ${{ github.repository }}
-    - name: ${{ env.arc }} / todo Download missing dependencies
-      if: steps.verifycache.outputs.cache == 'invalid'
-      shell: bash
-      run: |
-        echo "repository cache is bad."
-        echo "KEY: ${{ env.os }}-${{ env.arc }}-${{ hashFiles($keyfile) }}"
-        echo "### TodoUpdateCache :rocket:" >> $GITHUB_STEP_SUMMARY
-      env:
-        arc: ${{ inputs.architecture }}
-        os: Windows
-        keyfile: ${{ inputs.keyfile }}
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        REPO: ${{ github.repository }}
-        ky: ${{ hashFiles('urls.txt') }}
-        key: ${{ hashFiles(${{ inputs.keyfile }}) }}
+#--     - name: Verify cache /${{ env.arc }}
+#--       id: verifycache
+#--       continue-on-error: true
+#--       shell: bash {0}
+#--       run: |
+#--         test -d cache-${{ env.arc }} && rm -rf cache-${{ env.arc }}
+#--         test -d cache-${{ env.arc }} || mkdir cache-${{ env.arc }}
+#--         find downloads -type f -exec cp \{\} ./cache-${{ env.arc }} \;
+#--         echo "${{ inputs.md5sums }}" > MD5SUMS-${{ env.arc }}
+#--         cd ./cache-${{ env.arc }}
+#--         md5sum -c ../MD5SUMS-${{ env.arc }}
+#--         if [ $? -gt 0 ]; then
+#--           echo "cache=invalid" >> $GITHUB_OUTPUT
+#--         else
+#--           echo "cache=valid" >> $GITHUB_OUTPUT
+#--         fi
+#--         echo "### VerifyCache :rocket:" >> $GITHUB_STEP_SUMMARY
+#--       env:
+#--         arc: ${{ inputs.architecture }}
+#--         os: Windows
+#--         keyfile: ${{ inputs.keyfile }}
+#--         REPO: ${{ github.repository }}
+#--     - name: show result /${{ env.arc }}
+#--       shell: bash
+#--       run: |
+#--         echo 'cache status:' ${{ steps.verifycache.outputs.cache }}
+#--     - name: ${{ env.arc }} / Use current cache
+#--       if: steps.verifycache.outputs.cache == 'valid'
+#--       shell: bash
+#--       run: |
+#--         echo "repository cache is fine."
+#--         echo "KEY: ${{ env.os }}-${{ env.arc }}-${{ hashFiles($keyfile) }}"
+#--         echo "### NotUpdateCache :rocket:" >> $GITHUB_STEP_SUMMARY
+#--       env:
+#--         arc: ${{ inputs.architecture }}
+#--         os: Windows
+#--         keyfile: ${{ inputs.keyfile }}
+#--         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#--         REPO: ${{ github.repository }}
+#--     - name: ${{ env.arc }} / todo Download missing dependencies
+#--       if: steps.verifycache.outputs.cache == 'invalid'
+#--       shell: bash
+#--       run: |
+#--         echo "repository cache is bad."
+#--         echo "KEY: ${{ env.os }}-${{ env.arc }}-${{ hashFiles($keyfile) }}"
+#--         echo "### TodoUpdateCache :rocket:" >> $GITHUB_STEP_SUMMARY
+#--       env:
+#--         arc: ${{ inputs.architecture }}
+#--         os: Windows
+#--         keyfile: ${{ inputs.keyfile }}
+#--         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#--         REPO: ${{ github.repository }}
+#--         ky: ${{ hashFiles('urls.txt') }}
+#--         key: ${{ hashFiles(${{ inputs.keyfile }}) }}
 
