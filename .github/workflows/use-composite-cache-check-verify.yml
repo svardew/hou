@@ -38,7 +38,7 @@ jobs:
         uses: ./.github/actions/cache-check-verify
         with:
           restorekey: Windows-all-${{ hashFiles('urls.txt') }}
-          architetcure: all
+          architecture: all
 
 
 
