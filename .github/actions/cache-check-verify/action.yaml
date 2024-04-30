@@ -24,7 +24,7 @@ runs:
           enableCrossOsArchive: true
           path: downloads
           # key: ${{ env.os }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
-          key: ${{ env.os }}-${{ env.arc }}-${{ hashFiles($keyfile) }}
+          key: ${{ env.os }}-${{ env.arc }}-${{ hashFiles(${{ env.keyfile }}) }}
         env:
           arc: ${{ inputs.architecture }}
           os: Windows
