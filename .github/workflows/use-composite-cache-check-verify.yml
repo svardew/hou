@@ -17,7 +17,7 @@ jobs:
           echo '5.4.2' >> urls.txt
           echo ${{ env.WINPTY_URL }} >> urls.txt
           echo  '1.0.19' >> urls.txt
-          echo "restorekey=Windows-all-${{ hasFiles('urls.txt') }}" >> $GITHUB_OUTPUT
+          echo "restorekey=Windows-all-${{ hashFiles('urls.txt') }}" >> $GITHUB_OUTPUT
           {
             echo 'md5sum<<EOF'
             25b07e2b5177a2f071f109f641f9e3e4  lua-5.4.2_Win32_dllw6_lib.zip
