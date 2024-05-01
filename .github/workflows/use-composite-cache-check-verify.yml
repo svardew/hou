@@ -9,6 +9,9 @@ env:
 jobs:
   composite_test:
     runs-on: ubuntu-22.04
+    permissions:
+      actions: write
+      contents: write
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
