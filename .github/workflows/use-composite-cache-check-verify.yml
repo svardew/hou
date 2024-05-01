@@ -101,9 +101,11 @@ jobs:
           gh actions-cache list -R $REPO
           # restorekey: Windows-all-${{ hashFiles('urls.txt') }}
           # architecture: 'all'
+          # ?xflag? ${{ env.xflag }}
         env:
           architecture: 'all'
           flag: ${{ steps.verify-all.outputs.cachestatus }}
+          xflag: ${{ steps.verify-${{ env.architecture }}.outputs.cachestatus }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
