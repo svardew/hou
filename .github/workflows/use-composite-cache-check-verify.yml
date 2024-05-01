@@ -105,4 +105,5 @@ jobs:
           architecture: 'all'
           flag: ${{ steps.verify-all.outputs.cachestatus }}
           REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
