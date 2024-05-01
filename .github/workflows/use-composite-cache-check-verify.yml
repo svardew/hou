@@ -2,7 +2,9 @@ name: call composite-action
 on:
   workflow_dispatch:
 env:
+  LUA_RELEASE: '5.4.2'
   WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+  SODIUM_VER: '1.0.19'
 
 jobs:
   composite_test:
@@ -18,9 +20,9 @@ jobs:
         run: |
           test -d downloads || mkdir downloads
           touch urls.txt && truncate --size 0 urls.txt
-          echo '5.4.2' >> urls.txt
+          echo ${{ env.LUA_RELEASE }} >> urls.txt
           echo ${{ env.WINPTY_URL }} >> urls.txt
-          echo '1.0.19' >> urls.txt
+          echo ${{ env.SODIUM_VER }} >> urls.txt
           sed -i 's/$/\r/g' urls.txt
           # checksum
           touch MD5SUMS
@@ -83,4 +85,21 @@ jobs:
           cachestatus_all: ${{ steps.verify-all.outputs.cachestatus }}
           cachestatus_x86: ${{ steps.verify-x86.outputs.cachestatus }}
           cachestatus_x64: ${{ steps.verify-x64.outputs.cachestatus }}
+
+      - name: install actions/gh-actions-cache
+        run: |
+          gh extension install actions/gh-actions-cache
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: composite-action, pt2 ${{ env.architecture }}
+        if: ${{ env.flag }} != 'valild'
+        run: |
+          gh actions-cache list -R $REPO
+          # restorekey: Windows-all-${{ hashFiles('urls.txt') }}
+          # architecture: 'all'
+        env:
+          architecture: 'all'
+          flag: ${{ steps.verify-all.outputs.cachestatus }}
+          REPO: ${{ github.repository }}
 
