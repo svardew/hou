@@ -79,7 +79,7 @@ jobs:
           echo $cahestatus_all
           echo $cahestatus_x86
           echo $cahestatus_x64
-        env: |
+        env:
           cahestatus_all: ${{ steps.verify-all.outputs.cache }}
           cahestatus_x86: ${{ steps.verify-x86.outputs.cache }}
           cahestatus_x64: ${{ steps.verify-x64.outputs.cache }}
