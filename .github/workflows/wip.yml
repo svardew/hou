@@ -134,6 +134,7 @@ jobs:
           dlf2 ${{ env.LISBN_TAR_URL }} ${{ env.LISBN_TAR_SAVEAS }}
           echo '// check md5sum'
           md5sum -c ../$checksum
+          cd ../
           find $cachedir -type f -exec cp -vn \{\} ./downloads/ \;
         env:
           arc: any
