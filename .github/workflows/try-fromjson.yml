@@ -36,8 +36,5 @@ jobs:
         echo "J SON \n--$s"
       env:
         JSONSTR: |-
-          ${{ fromJSON([
-            "thisisapan",
-            "applebanana",
-          ]) }}
-        
+          ${{ fromJSON('["aa","ss"]') }}
+          
