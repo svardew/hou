@@ -32,7 +32,7 @@ jobs:
       run: echo "Hello ${{ inputs.name }}"
     - name: with JSON
       run: |
-        s=${{ toJSON(env.JSONSTR) }}
+        s=${{ join(toJSON(env.JSONSTR),'\t') }}
         echo "J SON $s"
       env:
         JSONSTR: '["thisispan","applebanana"]'
