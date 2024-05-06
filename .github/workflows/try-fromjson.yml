@@ -37,9 +37,9 @@ jobs:
       env:
         JSONSTR: |
           ${{
-            fromJSON('[
+            join(fromJSON('[
               "thisispan",
               "applebanana"
-            ]')
+            ]'), '\\n')
           }}
         
