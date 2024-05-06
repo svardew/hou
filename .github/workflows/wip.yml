@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       checksum:
-        required: true
+        required: false
         type: string
         desription: 'MD5SUMS csv one line'
         default: '9851c10632b2d9bbb261441be628d9b1  lisbn-0.3.1.tar.gz,8c061237261a00c307c82dd3880f19c1  lisbn-0.3.1.zip'
