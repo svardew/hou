@@ -16,7 +16,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: with JSON
+    - name: md5sum
+      id: md5sum
       shell: bash {0}
       run: |
         echo aamd5sum=$(cat <<EOM | jq -R -s
@@ -24,9 +25,13 @@ jobs:
         8c061237261a00c307c82dd3880f19c1  lisbn-0.3.1.zip
         EOM
         ) >> $GITHUB_OUTPUT
+    - name: with JSON
+      shell: bash {0}
+      run: |
         uname -a
         echo "J SON ?"
         echo $JSONSTR | sed 's/,/\n/g'
         echo ${{ toJSON($aamd5sum) }} | sed 's/,/\n/g'
       env:
         JSONSTR: ${{ join(fromJSON(inputs.name), ',') }}
+        MD5SUMS: ${{ steps.md5sum.outputs.aamd5sum }}
