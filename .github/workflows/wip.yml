@@ -46,7 +46,7 @@ jobs:
           checksum=MD5SUMS-${{ env.arc }}
           touch $checksum
           echo -n ${{ env.MD5SUMS_CSV }} > $checksum
-          sed -i 's/,/\n/g' > ./$checksum
+          sed -i 's/,/\n/g' $checksum
         env:
           arc: any
           GH_TOKEN: ${{ github.token }}
