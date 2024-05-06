@@ -36,6 +36,8 @@ jobs:
         echo "J SON \n--$s"
       env:
         JSONSTR: |-
-          thisisapan
-          applebanana
+          ${{ join( fromJSON([
+            "thisisapan",
+            "applebanana"
+          ]), '<>') }}
         
