@@ -33,8 +33,7 @@ jobs:
     - name: with JSON
       run: |
         s=${{ env.JSONSTR }}
-        ss=${{ fromJSON($s) }}
-        echo "J SON $ss"
+        echo "J SON $s"
       env:
-        JSONSTR: '["thisispan"]'
+        JSONSTR: '["thisispan","applebanana"]'
         
