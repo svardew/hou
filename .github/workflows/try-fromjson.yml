@@ -30,3 +30,8 @@ jobs:
     # Runs a single command using the runners shell
     - name: Send greeting
       run: echo "Hello ${{ inputs.name }}"
+    - name: with JSON
+      run: echo "J SON ${{ fromJSON($JSONSTR) }}"
+      env:
+        JSONSTR: '["thisispan"]'
+        
