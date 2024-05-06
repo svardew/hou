@@ -21,7 +21,7 @@ jobs:
       shell: bash {0}
       run: |
         #?? $GITHUB_OUPUT accept mulitline Val?? echo aamd5sum=$(cat <<EOM | jq -R -s
-        echo aamd5sum=$(cat <<EOM
+        echo aamd5sum=$(cat <<EOM | sed 's/$/,/g'
         9851c10632b2d9bbb261441be628d9b1  lisbn-0.3.1.tar.gz
         8c061237261a00c307c82dd3880f19c1  lisbn-0.3.1.zip
         EOM
@@ -32,7 +32,7 @@ jobs:
         uname -a
         echo "J SON ?"
         echo $JSONSTR | sed 's/,/\n/g'
-        echo ${{ toJSON(env.MD5SUMS) }} | sed 's/,/\n/g'
+        echo ${{ env.MD5SUMS }} | sed 's/,/\n/g'
       env:
         JSONSTR: ${{ join(fromJSON(inputs.name), ',') }}
         MD5SUMS: ${{ steps.md5sum.outputs.aamd5sum }}
