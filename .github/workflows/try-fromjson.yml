@@ -31,7 +31,7 @@ jobs:
     - name: Send greeting
       run: echo "Hello ${{ inputs.name }}"
     - name: with JSON
-      run: echo "J SON ${{ fromJSON($JSONSTR) }}"
+      run: echo "J SON ${{ fromJSON(${{ env.JSONSTR }}) }}"
       env:
         JSONSTR: '["thisispan"]'
         
