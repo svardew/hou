@@ -17,9 +17,16 @@ jobs:
 
     steps:
     - name: with JSON
+      shell: bash {0}
       run: |
+        echo aamd5sum=$(cat <<EOM | jq -R -s
+        9851c10632b2d9bbb261441be628d9b1  lisbn-0.3.1.tar.gz
+        8c061237261a00c307c82dd3880f19c1  lisbn-0.3.1.zip
+        EOM
+        ) >> $GITHUB_OUTPUT
         uname -a
         echo "J SON ?"
         echo $JSONSTR | sed 's/,/\n/g'
+        echo ${{ toJSON($aamd5sum) }} | sed 's/,/\n/g'
       env:
         JSONSTR: ${{ join(fromJSON(inputs.name), ',') }}
