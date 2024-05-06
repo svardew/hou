@@ -35,7 +35,7 @@ jobs:
         s=${{ join(env.JSONSTR,'<>') }}
         echo "J SON \n--$s"
       env:
-        JSONSTR: |
+        JSONSTR: |-
           thisisapan
           applebanana
         
