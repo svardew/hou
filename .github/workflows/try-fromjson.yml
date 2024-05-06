@@ -20,7 +20,8 @@ jobs:
       id: md5sum
       shell: bash {0}
       run: |
-        echo aamd5sum=$(cat <<EOM | jq -R -s
+        #?? $GITHUB_OUPUT accept mulitline Val?? echo aamd5sum=$(cat <<EOM | jq -R -s
+        echo aamd5sum=$(cat <<EOM
         9851c10632b2d9bbb261441be628d9b1  lisbn-0.3.1.tar.gz
         8c061237261a00c307c82dd3880f19c1  lisbn-0.3.1.zip
         EOM
