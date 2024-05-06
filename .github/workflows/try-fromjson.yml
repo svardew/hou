@@ -22,4 +22,4 @@ jobs:
         echo "J SON ?"
         echo $JSONSTR
       env:
-        JSONSTR: ${{ join(['this','is','a','pen'], '/') }}
+        JSONSTR: ${{ join(fromJSON('["this","is","apen"]'), '/') }}
