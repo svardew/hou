@@ -7,7 +7,7 @@ on:
       name:
         description: 'Person to greet'
         # default: 'World'
-        default: '{["aa","ss","dd","ff"]}'
+        default: '["aa","ss","dd","ff"]'
         required: true
         type: string
 
@@ -22,4 +22,4 @@ jobs:
         echo "J SON ?"
         echo $JSONSTR | sed 's/,/\n/g'
       env:
-        JSONSTR: ${{ join(fromJSON('["this","is","apen"]'), ',') }}
+        JSONSTR: ${{ join(fromJSON(inputs.name), ',') }}
