@@ -186,16 +186,18 @@ jobs:
         shell: bash {0}
         run: |
           touch summary_log
+          cachedir=cache-${{ env.arc }}
           checksum=MD5SUMS-${{ env.arc }}
           echo '---' >> summary_log
           echo '[cwd]:' >> summary_log
           ls -lagGp1 . >> summary_log
           echo '[cachedir]:' $cachedir >> summary_log
+          ls -lagGp $cachedir >> summary_log
           echo '[downloads]:' >> summary_log
           ls -lagGp downloads >> summary_log
           echo '---' >> summary_log
           echo '/* check md5sum in dowloads */' >> summary_log
-          cd downloads; md5sum -c ../$checksum >> summary_log; cd ../ >> summary_log
+          cd downloads; md5sum -c ../$checksum  >> summary_log; cd ../
           echo '---' >> summary_log
           echo '/* env */' >> summary_log
           env >> summary_log
