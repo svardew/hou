@@ -23,13 +23,13 @@ jobs:
       LUA_RELEASE: '5.4.2'
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
       SODIUM_VER: '1.0.19'
+      REPO_VIM: svardew/vim
+      OS: Windows
       # test urls
       LISBN_ZIP_URL: https://github.com/svardew/lisbn/archive/refs/tags/v0.3.1.zip
       LISBN_TAR_URL: https://github.com/svardew/lisbn/archive/refs/tags/v0.3.1.tar.gz
       LISBN_ZIP_SAVEAS: lisbn-0.3.1.zip
       LISBN_TAR_SAVEAS: lisbn-0.3.1.tar.gz
-      REPO_VIM: svardew/vim
-      OS: Windows
 
     steps:
       - uses: actions/checkout@v4
@@ -47,6 +47,11 @@ jobs:
           touch $checksum
           echo -n ${{ env.MD5SUMS_CSV }} > $checksum
           sed -i 's/,/\n/g' $checksum
+          # checkif
+          echo '/* $checksum */'
+          cat $checksum
+          echo '/* ls downloads */'
+          ls downloads
         env:
           arc: any
           GH_TOKEN: ${{ github.token }}
@@ -58,6 +63,11 @@ jobs:
           echo ${{ env.WINPTY_URL }} >> urls.txt
           echo ${{ env.SODIUM_VER }} >> urls.txt
           sed -i 's/$/\r/g' urls.txt
+          # checkif
+          echo '/* filetype urls.txt */'
+          file urls.txt
+          echo '/* urls.txt */'
+          cat urls.txt
 
       - name: Restore Cache
         uses: actions/cache/restore@v4
@@ -81,11 +91,21 @@ jobs:
           find downloads -type f -exec cp \{\} $cachedir
           cd $cachedir
           md5sum -c ../$checksum
-          if [ $? -gt 0 ]; then
+          flag=$?
+          if [ $flag -gt 0 ]; then
             echo "cache=invalid" >> $GITHUB_OUTPUT
           else
             echo "cache=valid" >> $GITHUB_OUTPUT
           fi
+          # checkif
+          echo '/* ls downloads */'
+          ls -lagG downloads
+          echo '/* ls $cachedir */'
+          ls -lagG $cachedir
+          echo '/* $checksum */'
+          cat $checksum
+          echo '/* md5sum result */'
+          echo 'md5sum return: [' $flag ']'
         env:
           arc: any
 
