@@ -89,7 +89,7 @@ jobs:
           checksum=MD5SUMS-${{ env.arc }}
           test -d $cachedir  && rm -rf $cachedir
           test -d $cachedir  || mkdir $cachedir
-          find downloads -type f -exec cp \{\} $cachedir
+          find downloads -type f -exec cp \{\} $cachedir \;
           cd $cachedir
           md5sum -c ../$checksum
           flag=$?
