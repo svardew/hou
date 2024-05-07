@@ -23,9 +23,9 @@ jobs:
       LUA_RELEASE: '5.4.2'
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
       SODIUM_VER: '1.0.19'
+      TARGET_OS: Windows
       REPO_VIM: svardew/vim
-      OS: Windows
-      # test urls
+      # dependencies.
       LISBN_ZIP_URL: https://github.com/svardew/lisbn/archive/refs/tags/v0.3.1.zip
       LISBN_TAR_URL: https://github.com/svardew/lisbn/archive/refs/tags/v0.3.1.tar.gz
       LISBN_ZIP_SAVEAS: lisbn-0.3.1.zip
@@ -45,7 +45,7 @@ jobs:
           # checksum
           checksum=MD5SUMS-${{ env.arc }}
           touch $checksum
-          echo -n ${{ env.MD5SUMS_CSV }} > $checksum
+          echo ${{ env.MD5SUMS_CSV }} > $checksum
           sed -i 's/,/\n/g' $checksum
           # checkif
           echo '/* $checksum */'
@@ -74,7 +74,7 @@ jobs:
         with:
           enableCrossOsArchive: true
           path: downloads
-          key: ${{ env.OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+          key: ${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
         env:
           arc: any
           REPO: ${{ github.repository }}
@@ -114,7 +114,7 @@ jobs:
         if: steps.verifycache.outputs.cache == 'valid'
         run: |
           echo "repository cache is fine."
-          echo "KEY: ${{ env.OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}"
+          echo "KEY: ${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}"
         env:
           arc: any
 
@@ -122,10 +122,10 @@ jobs:
         if: steps.verifycache.outputs.cache == 'invalid'
         run: |
           echo "repository cache is not fine."
-          echo "KEY: ${{ env.OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}"
-          echo "regenerate cache. first, delete cache"
+          echo "KEY: ${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}"
+          echo "[regenerate cache] first, delete cache"
           caches=$(gh actions-cache list -R ${{ env.REPO }} | cut -f1)
-          restorekey=${{ env.OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+          restorekey=${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
           for ky in $caches
           do
             if [ "$ky" = "$restorekey" ]; then
@@ -135,7 +135,7 @@ jobs:
           done
           # checkif
           echo '/* target KEY */'
-          echo ${{ env.OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+          echo ${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
           echo '/* list repository caches */'
           gh actions-cache list -R ${{ env.REPO }}
         env:
@@ -146,13 +146,13 @@ jobs:
       - name: Download missing dependencies
         if: steps.verifycache.outputs.cache == 'invalid'
         run: |
-          echo "regenerate cache. next, download dependencies."
+          echo "[regenerate cache] next, download dependencies."
           cachedir=cache-${{ env.arc }}
           checksum=MD5SUMS-${{ env.arc }}
           function dlf2 () {
             if [ ! -f "$2" ]
-            then wget -nv --tries=2 --waitretry=10 -O $2 $1
-            else echo Skip Downlaod. $2
+            then wget --no-verbose --tries=2 --waitretry=10 --output-document=$2 $1
+            else echo 'Skip Downlaod. file eixst:' $2
             fi
           }
           cd $cachedir
@@ -176,7 +176,7 @@ jobs:
         with:
           path: downloads
           enableCrossOsArchive: true
-          key: ${{ env.OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+          key: ${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
         env:
           arc: any
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -187,15 +187,17 @@ jobs:
         run: |
           function xlog () { echo "$*" >> $GITHUB_STEP_SUMMARY; }
           checksum=MD5SUMS-${{ env.arc }}
+          xlog '# summary'
           xlog '---'
-          xlog '[cwd]:' $(ls -lagGp1 . | sed 's/^/- /g')
+          xlog '[cwd]:' $(ls -lagGp1 . | sed 's/^/\n- /g')
           xlog '[cachedir]:' $cachedir
-          xlog '[downloads]:' $(ls -lagGp downloads | sed 's/^/- /g')
+          xlog '[downloads]:' $(ls -lagGp downloads | sed 's/^/\n- /g')
           xlog '---'
           xlog '/* check md5sum in dowloads */'
-          xlog $(cd downloads; md5sum -c ../$checksum | sed 's/^/- /g'; cd ../)
+          xlog $(cd downloads; md5sum -c ../$checksum | sed 's/^/\n- /g'; cd ../)
           xlog '---'
-          xlog $(env | sed 's/^/- /g')
+          xlog '/* env */'
+          xlog $(env | sed 's/^/\n- /g')
         env:
           arc: any
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
