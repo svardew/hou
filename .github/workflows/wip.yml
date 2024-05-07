@@ -185,20 +185,27 @@ jobs:
       - name: summary
         shell: bash {0}
         run: |
-          function xlog () { echo "$*" >> $GITHUB_STEP_SUMMARY; }
+          touch summary_log
           checksum=MD5SUMS-${{ env.arc }}
-          xlog '# summary'
-          xlog '---'
-          xlog '[cwd]:' $(ls -lagGp1 . | sed 's/^/\n- /g')
-          xlog '[cachedir]:' $cachedir
-          xlog '[downloads]:' $(ls -lagGp downloads | sed 's/^/\n- /g')
-          xlog '---'
-          xlog '/* check md5sum in dowloads */'
-          xlog $(cd downloads; md5sum -c ../$checksum | sed 's/^/\n- /g'; cd ../)
-          xlog '---'
-          xlog '/* env */'
-          xlog $(env | sed 's/^/\n- /g')
+          echo '---' >> summary_log
+          echo '[cwd]:' >> summary_log
+          ls -lagGp1 . >> summary_log
+          echo '[cachedir]:' $cachedir >> summary_log
+          echo '[downloads]:' >> summary_log
+          ls -lagGp downloads >> summary_log
+          echo '---' >> summary_log
+          echo '/* check md5sum in dowloads */' >> summary_log
+          cd downloads; md5sum -c ../$checksum >> summary_log; cd ../ >> summary_log
+          echo '---' >> summary_log
+          echo '/* env */' >> summary_log
+          env >> summary_log
+          # step summary
+          echo '# summary' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat summary_log >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
         env:
           arc: any
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
+
