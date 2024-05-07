@@ -84,7 +84,6 @@ jobs:
         continue-on-error: true
         shell: bash {0}
         run: |
-          xpwd=$PWD
           cachedir=cache-${{ env.arc }}
           checksum=MD5SUMS-${{ env.arc }}
           test -d $cachedir  && rm -rf $cachedir
@@ -98,8 +97,8 @@ jobs:
           else
             echo "cache=valid" >> $GITHUB_OUTPUT
           fi
+          cd ../
           # checkif
-          cd $xpwd
           echo '/* ls downloads */'
           ls -lagG downloads
           echo '/* ls $cachedir */'
@@ -134,6 +133,11 @@ jobs:
               gh actions-cache delete $restorekey -R ${{ env.REPO }} --confirm
             fi
           done
+          # checkif
+          echo '/* target KEY */'
+          echo ${{ env.OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+          echo '/* list repository caches */'
+          gh actions-cache list -R ${{ env.REPO }}
         env:
           arc: any
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -158,6 +162,11 @@ jobs:
           md5sum -c ../$checksum
           cd ../
           find $cachedir -type f -exec cp -vn \{\} ./downloads/ \;
+          # checkif
+          echo "/* $cachedir */"
+          ls -lagGp $cachedir
+          echo "/* downloads */"
+          ls -lagGp downloads
         env:
           arc: any
 
@@ -173,4 +182,21 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
 
-
+      - name: summary
+        shell: bash {0}
+        run: |
+          function xlog () { echo "$*" >> $GITHUB_STEP_SUMMARY; }
+          checksum=MD5SUMS-${{ env.arc }}
+          xlog '---'
+          xlog '[cwd]:' $(ls -lagGp1 . | sed 's/^/- /g')
+          xlog '[cachedir]:' $cachedir
+          xlog '[downloads]:' $(ls -lagGp downloads | sed 's/^/- /g')
+          xlog '---'
+          xlog '/* check md5sum in dowloads */'
+          xlog $(cd downloads; md5sum -c ../$checksum | sed 's/^/- /g'; cd ../)
+          xlog '---'
+          xlog $(env | sed 's/^/- /g')
+        env:
+          arc: any
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
