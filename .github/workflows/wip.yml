@@ -197,10 +197,13 @@ jobs:
           ls -lagGp downloads >> summary_log
           echo '---' >> summary_log
           echo '/* check md5sum in dowloads */' >> summary_log
-          cd downloads; md5sum -c ../$checksum  >> summary_log; cd ../
+          cd downloads; md5sum -c ../$checksum  >> ../summary_log; cd ../
           echo '---' >> summary_log
           echo '/* env */' >> summary_log
           env >> summary_log
+          echo '---' >> summary_log
+          echo '/* cache in repository */' >> summary_log
+          gh actions-cache list -R ${{ github.repository }} >> summary_log
           # step summary
           echo '# summary' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
