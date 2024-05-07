@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   windows:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     env:
       LUA_RELEASE: '5.4.2'
@@ -204,6 +204,12 @@ jobs:
           echo '---' >> summary_log
           echo '/* cache in repository */' >> summary_log
           gh actions-cache list -R ${{ github.repository }} >> summary_log
+          echo '/* runner-os: ubuntu, ruby, vim */' >> summary_log
+          uname -a >> summary_log
+          which ruby >> summary_log
+          ruby -v >> summary_log
+          which vim >> summary_log
+          vim --version >> summary_log
           # step summary
           echo '# summary' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
