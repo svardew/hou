@@ -84,6 +84,7 @@ jobs:
         continue-on-error: true
         shell: bash {0}
         run: |
+          xpwd=$PWD
           cachedir=cache-${{ env.arc }}
           checksum=MD5SUMS-${{ env.arc }}
           test -d $cachedir  && rm -rf $cachedir
@@ -98,6 +99,7 @@ jobs:
             echo "cache=valid" >> $GITHUB_OUTPUT
           fi
           # checkif
+          cd $xpwd
           echo '/* ls downloads */'
           ls -lagG downloads
           echo '/* ls $cachedir */'
