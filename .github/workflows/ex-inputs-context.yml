@@ -13,7 +13,7 @@ on:
           - 'ff'
       csvoneline:
         type: string
-        default: ""
+        default: "N/A"
 
 permissions:
   contents: read # to fetch code (actions/checkout)
@@ -32,4 +32,5 @@ jobs:
         env:
           str: 'workflow.jobid.stepid.str'
       - run: echo "inputs.csvline" ${{ inputs.csvoneline }} >> $GITHUB_STEP_SUMMARY
+      - run: echo "inputs.x.options.GLOBSTAR:" ${{ join(inputs.csvline.options.*, '<>') }} >> $GITHUB_STEP_SUMMARY
 
