@@ -5,8 +5,15 @@ on:
     inputs:
       csvline:
         required: false
+        type: choice
+        options:
+          - 'aa'
+          - 'ss'
+          - 'dd'
+          - 'ff'
+      csvoneline:
         type: string
-        default: ${{ join(['aa','ss','dd','ff'], '-') }}
+        default: ${{ join('') }}
 
 permissions:
   contents: read # to fetch code (actions/checkout)
@@ -24,5 +31,5 @@ jobs:
       - run: echo "wf.j.sid.env]" ${{ env.str }} >> $GITHUB_STEP_SUMMARY
         env:
           str: 'workflow.jobid.stepid.str'
-      - run: echo "inputs.csvline" ${{ inputs.csvline }} >> $GITHUB_STEP_SUMMARY
+      - run: echo "inputs.csvline" ${{ inputs.csvoneline }} >> $GITHUB_STEP_SUMMARY
 
