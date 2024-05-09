@@ -1,0 +1,28 @@
+name: inputs default value accept context syntax
+
+on:
+  workflow_dispatch:
+    inputs:
+      csvline:
+        required: false
+        type: string
+        default: ${{ github.repository }}
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+  actions: write # gh extension (actions/gh-actions-cache) delete cache
+
+jobs:
+  say:
+    runs-on: ubuntu-latest
+    env:
+      str: 'acpi_listen,activity-log-manager,add-apt-repository'
+    steps:
+      - run: uname -a >> $GITHUB_STEP_SUMMARY
+      - run: date
+      - run: echo "wf.jid.env]" ${{ env.str }} >> $GITHUB_STEP_SUMMARY
+      - run: echo "wf.j.sid.env]" ${{ env.str }} >> $GITHUB_STEP_SUMMARY
+        env:
+          str: 'workflow.jobid.stepid.str'
+      - run: echo "inputs.csvline" ${{ inputs.csvline }} >> $GITHUB_STEP_SUMMARY
+
