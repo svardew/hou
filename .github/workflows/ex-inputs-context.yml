@@ -6,7 +6,7 @@ on:
       csvline:
         required: false
         type: string
-        default: ${{ github.repository }}
+        default: ${{ join(['aa','ss','dd','ff'], '-') }}
 
 permissions:
   contents: read # to fetch code (actions/checkout)
