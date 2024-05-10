@@ -34,5 +34,5 @@ jobs:
       - name: check GITHUB_ENV
         shell: bash {0}
         run: |
-          env | grep -E '_URL\|_SAVEAS'
+          env | grep -E '_URL|_SAVEAS'
           echo 'done'
