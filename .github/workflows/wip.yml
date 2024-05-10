@@ -46,7 +46,7 @@ jobs:
           checksum=MD5SUMS-${{ env.arc }}
           touch $checksum
           echo ${{ env.MD5SUMS_CSV }} > $checksum
-          sed -i 's/,/\n/g' $checksum
+          sed -i 's/,\s*/\n/g' $checksum
           # checkif
           echo '/* $checksum */'
           cat $checksum
@@ -118,7 +118,7 @@ jobs:
         env:
           arc: any
 
-      - name: Delete repository cache
+      - name: Update cache (1/3). Delete repository cache
         if: steps.verifycache.outputs.cache == 'invalid'
         run: |
           echo "repository cache is not fine."
@@ -143,7 +143,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
 
-      - name: Download missing dependencies
+      - name: Update cache (2/3). Download missing dependencies
         if: steps.verifycache.outputs.cache == 'invalid'
         run: |
           echo "[regenerate cache] next, download dependencies."
@@ -170,7 +170,7 @@ jobs:
         env:
           arc: any
 
-      - name: Save cache
+      - name: Update cache (3/3). Save cache
         if: steps.verifycache.outputs.cache == 'invalid'
         uses: actions/cache/save@v4
         with:

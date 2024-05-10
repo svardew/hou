@@ -22,11 +22,13 @@ jobs:
       SODIUM_VER: '1.0.19'
       SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.19-stable-msvc.zip
       SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.19-stable-mingw.tar.gz
+
     steps:
       - name: Checkout repository from github
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository_owner }}/vim
+
       - name: init
         run: |
           test -d downloads || mkdir downloads
@@ -52,6 +54,7 @@ jobs:
           113f036c91f06a9fdb11186e3dce7d93  libsodium.zip
           8867b0380daabd12ece3dbad73197e78  libsodium.tar.gz
           LINES
+
       - name: Key file (list of download URLs)
         run: |
           touch urls.txt && truncate --size 0 urls.txt
@@ -60,16 +63,17 @@ jobs:
           echo ${{ env.SODIUM_VER }}  >> urls.txt
           sed -i 's/$/\r/g' urls.txt
 
-      - name: Windows-x86 pt.1
-        # restore, verify, download {{{
-        run: exit 0
-      - name: Restore Cache Windows-x86
+      # x86
+      - name: ${{ env.arc }} Restore Cache
         uses: actions/cache/restore@v4
         with:
           enableCrossOsArchive: true
           path: downloads
           key: Windows-x86-${{ hashFiles('urls.txt') }}
-      - name: Verify cache Windows-x86
+        env:
+          arc: x86
+
+      - name: ${{ env.arc }} Verify cache
         id: verifycache86
         continue-on-error: true
         shell: bash {0}
@@ -80,10 +84,13 @@ jobs:
           if [ $? -gt 0 ]; then
             echo "cache=invalid" >> $GITHUB_OUTPUT
           fi
-      - name: Download dependencies Windows-x86
+        env:
+          arc: x86
+
+      - name: ${{ env.arc }} Download missing dependencies
         if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
         run: |
-          dlf2 () {
+          function dlf2 () {
             if [ ! -f "$2" ]
             then wget -nv --tries=2 --waitretry=10 -O $2 $1
             else echo Skip Downlaod. $2
@@ -94,19 +101,20 @@ jobs:
           dlf2 ${{ env.WINPTY_URL }}       winpty.zip
           dlf2 ${{ env.SODIUM_MSVC_URL }}  libsodium.zip
           dlf2 ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz
-          echo '---'
-          ls . -1
-          md5sum -c ../MD5SUMS-x86 # }}}
-      - name: Windows-x64 pt.1
-        # restore, verify, download {{{
-        run: exit 0
-      - name: Restore Cache Windows-x64
+          echo '// check md5sum'
+          md5sum -c ../MD5SUMS-x86
+
+      # x64
+      - name: ${{ env.arc }} Restore Cache
         uses: actions/cache/restore@v4
         with:
           enableCrossOsArchive: true
           path: downloads
-          key: Windows-x64-${{ hashFiles('urls.txt') }}
-      - name: Verify cache Windows-x64
+          key: Windows-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+        env:
+          arc: x64
+
+      - name: ${{ env.arch }} Verify cache
         id: verifycache64
         continue-on-error: true
         shell: bash {0}
@@ -117,10 +125,13 @@ jobs:
           if [ $? -gt 0 ]; then
             echo "cache=invalid" >> $GITHUB_OUTPUT
           fi
-      - name: Download dependencies Windows-x64
+        env:
+          arc: x64
+
+      - name: ${{ env.arc }} Download missing dependencies
         if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
         run: |
-          dlf2 () {
+          function dlf2 () {
             if [ ! -f "$2" ]
             then wget -nv --tries=2 --waitretry=10 -O $2 $1
             else echo Skip Downlaod. $2
@@ -131,17 +142,18 @@ jobs:
           dlf2 ${{ env.WINPTY_URL }}       winpty.zip
           dlf2 ${{ env.SODIUM_MSVC_URL }}  libsodium.zip
           dlf2 ${{ env.SODIUM_MINGW_URL }} libsodium.tar.gz
-          echo '---'
-          ls . -1
-          md5sum -c ../MD5SUMS-x64 # }}}
+          echo '// check md5sum'
+          md5sum -c ../MD5SUMS-x64
+        env:
+          arc: x64
 
       - name: List cache
+        shell: bash {0}
         run: |
           gh extension install actions/gh-actions-cache
-          echo "/* List of repository cache key */"
-          cacheKeys=$(gh actions-cache list -R $REPO -L 100 | cut -f 1 )
-          echo "$cacheKeys"
-          echo "/* Local files: downloads, cache-x86, cache-x64 */"
+          echo "/* List of repository cache */"
+          gh actions-cache list -R $REPO -L 100 | cut -f 1
+          echo "/* Local dependencies */"
           echo '--- 'downloads && ls -lagG downloads
           echo '--- 'cache-x86 && ls -lagG cache-x86
           echo '--- 'cache-x64 && ls -lagG cache-x64
@@ -149,15 +161,16 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Windows-x86 pt.2
-        # prepare deps in downloads, delete repository cache, save cache {{{
-        run: exit 0
-      - name: prepare downloads
+      # x86
+      - name: ${{ env.arc }} Copy dependencies to downloads
         if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
         run: |
           find downloads -type f -exec rm \{\} \+
           cp cache-x86/* ./downloads/
-      - name: delete repository cache
+        env:
+          arc: x86
+
+      - name: ${{ env.arc }} Delete repository cache
         if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
         shell: bash {0}
         run: |
@@ -165,7 +178,7 @@ jobs:
           for ky in $caches
           do
             if [ "$ky" = "${{ env.KEY }}" ];then
-              echo "repository cache exist. delete cache" $KEY
+              echo "repository cache exist. delete cache" ${{ env.KEY }}
               gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
             fi
           done
@@ -173,32 +186,37 @@ jobs:
           KEY: Windows-x86-${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: save cache
+          arc: x86
+
+      - name: ${{ env.arc }} Save cache
         if: ${{ steps.verifycache86.outputs.cache == 'invalid' }}
         uses: actions/cache/save@v4
         with:
           path: downloads
           enableCrossOsArchive: true
-          key: Windows-x86-${{ hashFiles('urls.txt') }}
+          key: Windows-${{ env.arc }}-${{ hashFiles('urls.txt') }}
         env:
           REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # }}}
-      - name: Windows-x64 pt.2
-        # prepare deps in downloads, delete repository cache, save cache {{{
-        run: exit 0
-      - name: prepare downloads
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          arc: x86
+
+      # x64
+      - name: ${{ env.arc }} Copy dependencies to downloads
         if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
         run: |
           find downloads -type f -exec rm \{\} \+
           cp cache-x64/* ./downloads/
-      - name: delete repository cache
+        env:
+          arc: x64
+
+      - name: ${{ env.arc }} Delete repository cache
         if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
         run: |
           caches=$(gh actions-cache list -R ${{ env.REPO }} | cut -f1)
           for ky in $caches
           do
             if [ "$ky" = "${{ env.KEY }}" ];then
-              echo "repository cache exist. delete cache" $KEY
+              echo "repository cache exist. delete cache" ${{ env.KEY }}
               gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
             fi
           done
@@ -206,21 +224,19 @@ jobs:
           KEY: Windows-x64-${{ hashFiles('urls.txt') }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: save cache
+          arc: x64
+
+      - name: ${{ env.arc }} Save cache
         if: ${{ steps.verifycache64.outputs.cache == 'invalid' }}
         uses: actions/cache/save@v4
         with:
           path: downloads
           enableCrossOsArchive: true
-          key: Windows-x64-${{ hashFiles('urls.txt') }}
+          key: Windows-${{ env.arc }}-${{ hashFiles('urls.txt') }}
         env:
           REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # }}}
-      - name: memo
-        run: |
-          # momorize
-          exit 0
-
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          arc: x64
 
   windows:
     if: false

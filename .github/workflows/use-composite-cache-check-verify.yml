@@ -3,8 +3,12 @@ on:
   workflow_dispatch:
 env:
   LUA_RELEASE: '5.4.2'
+  LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-5.4.2_Win32_dllw6_lib.zip
+  LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-5.4.2_Win64_dllw6_lib.zip
   WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
   SODIUM_VER: '1.0.19'
+  SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.19-stable-msvc.zip
+  SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.19-stable-mingw.tar.gz
 
 jobs:
   composite_test:
@@ -95,8 +99,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: composite-action ${{ env.architecture }}
+        id: update-all
+        uses: ./.github/actions/cache-fetch-save
+        with:
+          restorekey: Windows-all-${{ hashFiles('urls.txt') }}
+          architecture: 'all'
+        env:
+          architecture: 'all'
+
+
       - name: composite-action, pt2 ${{ env.architecture }}
-        if: ${{ env.flag }} != 'valild'
+        if: ${{ env.flag }} != "valild ${{ env.architecture }}"
         run: |
           gh actions-cache list -R $REPO
           # restorekey: Windows-all-${{ hashFiles('urls.txt') }}
@@ -104,8 +118,27 @@ jobs:
           # ?xflag? ${{ env.xflag }}
         env:
           architecture: 'all'
-          flag: ${{ steps.verify-all.outputs.cachestatus }}
-          xflag: ${{ steps.verify-${{ env.architecture }}.outputs.cachestatus }}
+          cachestatus: ${{ steps.verify-all.outputs.cachestatus }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#- ####################
+#- https://qiita.com/dip-m-hirao/items/5db63e662424f2149c9a
+#- https://blog.stenyan.jp/entry/2023/01/05/211449
+#- https://earthly.dev/blog/composite-actions-github/
+#- https://blog.beachside.dev/entry/2021/09/24/220000
+#- https://dev.to/oneadvanced/github-reusable-workflows-and-custom-actions-3cbk
+#- https://qiita.com/simonritchie/items/2d108612691b8ab6f167
+#- https://wallis.dev/blog/composite-github-actions
+#- https://medium.com/@xpiotrkleban/github-actions-reusability-dry-principle-debugging-and-fast-feedback-c810ed87a43f
+#- https://engineering.mercari.com/blog/entry/20231223-mercoin-github-actions/
+#- https://docs.github.com/ja/actions/creating-actions/creating-a-composite-action
+#- https://zenn.dev/tmrekk/articles/5fef57be891040
+#- ####################
+#- https://github.com/orgs/community/discussions/116619
+#- + How to set multiline strings to GITHUB_OUTPUT
+#- https://qiita.com/Ets/items/f93a48d40c81ea1e0c99
+#- + GitHub Actionsで複数行の文字列をstep間で受け渡す
+#- https://gotohayato.com/content/558/
+#- + GitHub Actions で複数行の文字列を output にセットする方法 
 
