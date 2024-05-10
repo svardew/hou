@@ -47,7 +47,9 @@ jobs:
           for x in $(echo $deps); do
             u=${x}_URL
             s=${x}_SAVEAS
-            echo $u $x
+            echo $u $s
+            echo ${!u} '[dollar-curly-bang str]'
+            echo ${!s} 'ditto'
             echo bare squote dquote
             echo ${{ env.u }}}
             #-- echo _ctx_ env ['$u'] _ctx_
