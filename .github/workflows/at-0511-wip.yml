@@ -55,7 +55,7 @@ jobs:
           # caller pass checksum_file
           checksum=MD5SUMS-any
           touch $checksum
-          echo <<EOM > $checksum
+          cat <<EOM > $checksum
           9851c10632b2d9bbb261441be628d9b1  lisbn-0.3.1.tar.gz
           8c061237261a00c307c82dd3880f19c1  lisbn-0.3.1.zip
           EOM
@@ -64,7 +64,7 @@ jobs:
           # - gather dependency name prefix into env.depnames
           deps=partial_env_dependencies
           touch $deps
-          echo <<EOM > $deps
+          cat <<EOM > $deps
           LISBN_ZIP_URL: https://github.com/svardew/lisbn/archive/refs/tags/v0.3.1.zip
           LISBN_TAR_URL: https://github.com/svardew/lisbn/archive/refs/tags/v0.3.1.tar.gz
           LISBN_ZIP_SAVEAS: lisbn-0.3.1.zip
