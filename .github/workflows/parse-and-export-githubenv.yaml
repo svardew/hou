@@ -47,8 +47,9 @@ jobs:
           for x in $(echo $deps); then
             u=${x}_URL
             s=${x}_SAVEAS
+            echo $u $x
             echo bare squote dquote
-            echo ${{ env[$u] }}
+            echo ${{ env.u }}}
             #-- echo _ctx_ env ['$u'] _ctx_
             #-- echo _ctx_ env ["$u"] _ctx_
           done
