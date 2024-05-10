@@ -62,7 +62,7 @@ jobs:
           # caller pass dependency_file
           # - export each line into GITHUB_ENV
           # - gather dependency name prefix into env.depnames
-          deps=partial_env_dependencies
+          deps=${{ inputs.dependency_file }}
           touch $deps
           cat <<EOM > $deps
           LISBN_ZIP_URL: https://github.com/svardew/lisbn/archive/refs/tags/v0.3.1.zip
