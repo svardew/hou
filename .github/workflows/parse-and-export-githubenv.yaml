@@ -30,9 +30,9 @@ jobs:
         run: |
           cat partial_env.txt
           echo '---'
-          cat partial_env.txt | sed 's/^\(.\+\)\ \+/\1=/' >> $GITHUB_ENV
+          cat partial_env.txt | sed 's/^\(.\+\):\ \+/\1=/' >> $GITHUB_ENV
       - name: check GITHUB_ENV
         shell: bash {0}
-        run: 
+        run: |
           env | grep -E '_URL\|_SAVEAS'
           echo 'done'
