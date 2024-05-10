@@ -1,0 +1,263 @@
+name: Check deps cache daily v0511
+
+on:
+  # schedule:
+    # - cron: '24 15 * * *'  # Run once per day.
+  workflow_dispatch:
+    inputs:
+      arc:
+        required: false
+        type: string
+        default: 'any'
+      checksum_file:
+        required: false
+        type: string
+        desription: 'MD5SUMS file'
+        default: 'MD5SUMS-any'
+      dependency_file:
+        required: false
+        type: string
+        description: 'partial env file. XXX with suffix _URL, _SAVEAS'
+        default: 'partial_env_dependencies'
+        # LIBFOO_URL: https://example.com/f/foo/libfoo-3.14.zip
+        # LIBFOO_SAVEAS: libfoo.zip
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+  actions: write # gh extension (actions/gh-actions-cache) delete cache
+
+jobs:
+  windows:
+    runs-on: ubuntu-latest
+
+    env:
+      LUA_RELEASE: '5.4.2'
+      WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+      SODIUM_VER: '1.0.19'
+      TARGET_OS: Windows
+      REPO_VIM: svardew/vim
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: vim
+          repository: ${{ env.REPO_VIM }}
+
+      - name: Set up environment (caller)
+        if: true
+        shell: bash {0}
+        run: |
+          echo 9099
+          echo "arc=${{ inputs.arc }}" >> $GITHUB_ENV
+          echo "cachedir=cachedir-${{ inputs.arc }}" >> $GITHUB_ENV
+          echo "checksum=${{ inputs.checksum_file }}" >> $GITHUB_ENV
+          echo "deps=${{ inputs.dependency_file }}" >> $GITHUB_ENV
+          # caller pass checksum_file
+          checksum=MD5SUMS-any
+          touch $checksum
+          echo <<EOM > $checksum
+          9851c10632b2d9bbb261441be628d9b1  lisbn-0.3.1.tar.gz
+          8c061237261a00c307c82dd3880f19c1  lisbn-0.3.1.zip
+          EOM
+          # caller pass dependency_file
+          # - export each line into GITHUB_ENV
+          # - gather dependency name prefix into env.depnames
+          deps=partial_env_dependencies
+          touch $deps
+          echo <<EOM > $deps
+          LISBN_ZIP_URL: https://github.com/svardew/lisbn/archive/refs/tags/v0.3.1.zip
+          LISBN_TAR_URL: https://github.com/svardew/lisbn/archive/refs/tags/v0.3.1.tar.gz
+          LISBN_ZIP_SAVEAS: lisbn-0.3.1.zip
+          LISBN_TAR_SAVEAS: lisbn-0.3.1.tar.gz
+          EOM
+
+      - name: Set up environment
+        run: |
+          test -d downloads || mkdir downloads
+          touch urls.txt && truncate --size 0 urls.txt
+          gh extension install actions/gh-actions-cache
+          # env
+          echo "arc=${{ inputs.arc }}" >> $GITHUB_ENV
+          echo "cachedir=cachedir-${{ inputs.arc }}" >> $GITHUB_ENV
+          echo "checksum=${{ inputs.checksum_file }}" >> $GITHUB_ENV
+          echo "deps=${{ inputs.dependency_file }}" >> $GITHUB_ENV
+          # checksum
+          checksum=${{ inputs.checksum_file }}
+          cat $checksum
+          # dependencies
+          deps=${{ inputs.dependency_file }}
+          cat $deps | sed 's/^\(.\+\):\ \+/\1=/' >> $GITHUB_ENV
+          depnames=$(cat $deps | grep -E '_URL:\s\+' | cut -d: -f1 | paste -d ' ')
+          echo "depnames=$depnames" >> $GITHUB_ENV
+          echo 'dependencies:' $depnames
+
+      - name: Create Keyfile
+        run: |
+          echo ${{ env.LUA_RELEASE }} > urls.txt
+          echo ${{ env.WINPTY_URL }} >> urls.txt
+          echo ${{ env.SODIUM_VER }} >> urls.txt
+          sed -i 's/$/\r/g' urls.txt
+          # checkif
+          echo '/* filetype urls.txt */'
+          file urls.txt
+          echo '/* urls.txt */'
+          cat urls.txt
+
+      - name: Restore Cache
+        uses: actions/cache/restore@v4
+        with:
+          enableCrossOsArchive: true
+          path: downloads
+          key: ${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+        env:
+          REPO: ${{ github.repository }}
+
+      - name: Verify cache
+        id: verifycache
+        continue-on-error: true
+        shell: bash {0}
+        run: |
+          cachedir=${{ env.cachedir }}
+          checksum=${{ env.checksum }}
+          test -d $cachedir  && rm -rf $cachedir
+          test -d $cachedir  || mkdir $cachedir
+          find downloads -type f -exec cp \{\} $cachedir \;
+          cd $cachedir
+          md5sum -c ../$checksum
+          flag=$?
+          if [ $flag -gt 0 ]; then
+            echo "cache=invalid" >> $GITHUB_OUTPUT
+          else
+            echo "cache=valid" >> $GITHUB_OUTPUT
+          fi
+          cd ../
+          # checkif
+          echo '/* ls downloads */'
+          ls -lagG downloads
+          echo '/* ls $cachedir */'
+          ls -lagG $cachedir
+          echo '/* $checksum */'
+          cat $checksum
+          echo '/* md5sum result */'
+          echo 'md5sum return: [' $flag ']'
+
+      - name: Use current cache
+        if: steps.verifycache.outputs.cache == 'valid'
+        run: |
+          echo "repository cache is fine."
+          echo "KEY: ${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}"
+          echo "/* dependencies info */"
+          for x in $(echo $depnames); do
+            u=${x}_URL
+            f=${x}_SAVEAS
+            echo '-- PREFIX='${x}
+            echo 'url:' ${!u}
+            echo 'saveas:' ${!f}
+          done
+        env:
+          arc: any
+          depnames: ${{ env.depnames }}
+
+      - name: Update cache (1/3). Delete repository cache
+        if: steps.verifycache.outputs.cache == 'invalid'
+        run: |
+          echo "repository cache is not fine."
+          echo "KEY: ${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}"
+          echo "[regenerate cache] first, delete cache"
+          caches=$(gh actions-cache list -R ${{ env.REPO }} | cut -f1)
+          restorekey=${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+          for ky in $caches
+          do
+            if [ "$ky" = "$restorekey" ]; then
+              echo "* delete repository cache:" $restorekey
+              gh actions-cache delete $restorekey -R ${{ env.REPO }} --confirm
+            fi
+          done
+          # checkif
+          echo '/* target KEY */'
+          echo ${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+          echo '/* list repository caches */'
+          gh actions-cache list -R ${{ env.REPO }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+
+      - name: Update cache (2/3). Download missing dependencies
+        if: steps.verifycache.outputs.cache == 'invalid'
+        run: |
+          echo "[regenerate cache] next, download dependencies."
+          echo "dependencies:" ${{ env.depnames }}
+          cachedir=${{ env.cachedir }}
+          checksum=${{ env.checksum }}
+          function dlf2 () {
+            if [ ! -f "$2" ]
+            then wget --no-verbose --tries=2 --waitretry=10 --output-document=$2 $1
+            else echo 'Skip Downlaod. file eixst:' $2
+            fi
+          }
+          cd $cachedir
+          # dlf2 ${{ env.LISBN_ZIP_URL }} ${{ env.LISBN_ZIP_SAVEAS }}
+          # dlf2 ${{ env.LISBN_TAR_URL }} ${{ env.LISBN_TAR_SAVEAS }}
+          for n in $(echo ${{ env.depnames }}); do
+            url=${n}_URL
+            fname=${n}_SAVEAS
+            dlf2 ${!url} ${!fname}
+          done
+          echo '// check md5sum'
+          md5sum -c ../$checksum
+          cd ../
+          find $cachedir -type f -exec cp -vn \{\} ./downloads/ \;
+          # checkif
+          echo "/* $cachedir */"
+          ls -lagGp $cachedir
+          echo "/* downloads */"
+          ls -lagGp downloads
+
+      - name: Update cache (3/3). Save cache
+        if: steps.verifycache.outputs.cache == 'invalid'
+        uses: actions/cache/save@v4
+        with:
+          path: downloads
+          enableCrossOsArchive: true
+          key: ${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+
+      - name: summary
+        shell: bash {0}
+        run: |
+          touch summary_log
+          cachedir=cache-${{ env.arc }}
+          checksum=MD5SUMS-${{ env.arc }}
+          echo '---' >> summary_log
+          echo '[cwd]:' >> summary_log
+          ls -lagGp1 . >> summary_log
+          echo '[cachedir]:' $cachedir >> summary_log
+          ls -lagGp $cachedir >> summary_log
+          echo '[downloads]:' >> summary_log
+          ls -lagGp downloads >> summary_log
+          echo '---' >> summary_log
+          echo '/* check md5sum in dowloads */' >> summary_log
+          cd downloads; md5sum -c ../$checksum  >> ../summary_log; cd ../
+          echo '---' >> summary_log
+          echo '/* env */' >> summary_log
+          env >> summary_log
+          echo '---' >> summary_log
+          echo '/* cache in repository */' >> summary_log
+          gh actions-cache list -R ${{ github.repository }} >> summary_log
+          echo '/* runner-os: ubuntu, ruby, vim */' >> summary_log
+          uname -a >> summary_log
+          which ruby >> summary_log
+          ruby -v >> summary_log
+          which vim >> summary_log
+          vim --version >> summary_log
+          # step summary
+          echo '# summary' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat summary_log >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+
