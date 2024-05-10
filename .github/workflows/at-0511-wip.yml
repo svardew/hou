@@ -72,6 +72,7 @@ jobs:
           EOM
 
       - name: Set up environment
+        shell: bash {0}
         run: |
           test -d downloads || mkdir downloads
           touch urls.txt && truncate --size 0 urls.txt
@@ -119,7 +120,6 @@ jobs:
       - name: Verify cache
         id: verifycache
         continue-on-error: true
-        shell: bash {0}
         run: |
           cachedir=${{ env.cachedir }}
           checksum=${{ env.checksum }}
@@ -164,6 +164,7 @@ jobs:
 
       - name: Update cache (1/3). Delete repository cache
         if: steps.verifycache.outputs.cache == 'invalid'
+        shell: bash {0}
         run: |
           echo "repository cache is not fine."
           echo "KEY: ${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}"
