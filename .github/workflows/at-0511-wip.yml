@@ -90,6 +90,9 @@ jobs:
           depnames=$(cat $deps | grep -E '_URL:\s\+' | cut -d: -f1 | paste -d ' ')
           echo "depnames=$depnames" >> $GITHUB_ENV
           echo 'dependencies:' $depnames
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
 
       - name: Create Keyfile
         run: |
@@ -110,6 +113,7 @@ jobs:
           path: downloads
           key: ${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}
         env:
+          GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
 
       - name: Verify cache
@@ -148,14 +152,14 @@ jobs:
           echo "KEY: ${{ env.TARGET_OS }}-${{ env.arc }}-${{ hashFiles('urls.txt') }}"
           echo "/* dependencies info */"
           for x in $(echo $depnames); do
-            u=${x}_URL
-            f=${x}_SAVEAS
+            url=${x}_URL
+            fname=${x}_SAVEAS
             echo '-- PREFIX='${x}
-            echo 'url:' ${!u}
-            echo 'saveas:' ${!f}
+            echo 'url:' ${!url}
+            echo 'saveas:' ${!fname}
           done
         env:
-          arc: any
+          GH_TOKEN: ${{ github.token }}
           depnames: ${{ env.depnames }}
 
       - name: Update cache (1/3). Delete repository cache
