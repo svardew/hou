@@ -36,3 +36,11 @@ jobs:
         run: |
           env | grep -E '_URL|_SAVEAS'
           echo 'done'
+      - name: use via context or env
+        shell: bash {0}
+        run: |
+          echo ${{ env.LISBN_ZIP_URL }}
+          echo $E_LISBN_TAR_URL
+        env:
+          E_LISBN_TAR_URL: ${{ env.LISBN_TAR_URL }}
+          
