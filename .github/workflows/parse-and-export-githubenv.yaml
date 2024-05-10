@@ -42,7 +42,8 @@ jobs:
         run: |
           echo ${{ env.LISBN_ZIP_URL }}
           echo $E_LISBN_TAR_URL
-          echo ${{ env.${E_KEYSTR}_URL }}
+          echo ${{ env['E_LISBN_TAR_URL'] }}
+          #-- echo ${{ env[${E_KEYSTR}_URL] }}
         env:
           E_LISBN_TAR_URL: ${{ env.LISBN_TAR_URL }}
           E_KEYSTR: LISBN_ZIP
