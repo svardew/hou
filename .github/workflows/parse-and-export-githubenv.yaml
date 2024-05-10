@@ -44,7 +44,7 @@ jobs:
           echo $E_LISBN_TAR_URL
           echo ${{ env['E_LISBN_TAR_URL'] }}
           deps="LISBN_TAR LISBN_ZIP"
-          for x in $(echo $deps); then
+          for x in $(echo $deps); do
             u=${x}_URL
             s=${x}_SAVEAS
             echo $u $x
