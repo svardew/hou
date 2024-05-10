@@ -1,0 +1,38 @@
+# This is a basic workflow to help you get started with Actions
+
+name: try github_env with partial file
+
+# Controls when the workflow will run
+on:
+  workflow_dispatch:
+
+jobs:
+  trywork:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+        with:
+          repository: svardew/vim
+          
+      - name: write key-value file
+        shell: bash {0}
+        run: |
+          cat <<EOMX > partial_env.txt
+          LISBN_ZIP_URL: https://github.com/svardew/lisbn/archive/refs/tags/v0.3.1.zip
+          LISBN_TAR_URL: https://github.com/svardew/lisbn/archive/refs/tags/v0.3.1.tar.gz
+          LISBN_ZIP_SAVEAS: lisbn-0.3.1.zip
+          LISBN_TAR_SAVEAS: lisbn-0.3.1.tar.gz
+          EOMX
+      - name: export into GITHUB_ENV
+        shell: bash {0}
+        run: |
+          cat partial_env.txt
+          echo '---'
+          cat partial_env.txt | sed 's/^\(.\+\)\ \+/\1=/' >> $GITHUB_ENV
+      - name: check GITHUB_ENV
+        shell: bash {0}
+        run: 
+          env | grep -E '_URL\|_SAVEAS'
+          echo 'done'
