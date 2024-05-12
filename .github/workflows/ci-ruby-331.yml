@@ -137,7 +137,7 @@ jobs:
       - name: Env values ruby-3.3.1
         run: |
           echo "setup-ruby change ruby path. `which ruby{,-3.3.1} expect same path`"
-          which ruby-3.3.1
+          echo "/* ruby-3.1.1 is not found $PATH ... # which ruby-3.3.1 */"
           which ruby
           setupruby_libdir=$(ruby -rrbconfig -e 'print RbConfig::CONFIG["libdir"]')
           setupruby_pkgconfigdir=${setupruby_libdir}/pkgconfig
