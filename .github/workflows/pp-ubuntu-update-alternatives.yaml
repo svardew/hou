@@ -15,9 +15,13 @@ jobs:
       - name: Run a one-line script
         run: uname -a
       - name: p update-alter
+        shell: bash {0}
         run: |
-          echo '/* expect system ruby only before actions/setup-ruby */'
+          echo '/** no ruby entry in update-alternatives.
+          echo ' * first upd-alt --install ruby'
+          echo ' */'
           echo '```' >> $GITHUB_STEP_SUMMARY
-          update-alternatives --query ruby >> $GITHUB_STEP_SUMMARY
+          which ruby >> $GITHUB_STEP_SUMMARY
+          # sudo update-alternatives --install ruby ...
           echo '```' >> $GITHUB_STEP_SUMMARY
-          echo test, and deploy your project.
+          
