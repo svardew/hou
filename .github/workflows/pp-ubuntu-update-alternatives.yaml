@@ -1,0 +1,23 @@
+name: print ubuntu update-alternatives with setup-ruby
+
+on:
+  workflow_dispatch:
+
+jobs:
+  printenv:
+    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: svardew/vim
+          path: vim
+      - name: Run a one-line script
+        run: uname -a
+      - name: p update-alter
+        run: |
+          echo '/* expect system ruby only before actions/setup-ruby */'
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          update-alternatives --query ruby >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo test, and deploy your project.
