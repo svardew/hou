@@ -24,8 +24,18 @@ jobs:
           which ruby >> $GITHUB_STEP_SUMMARY
           ls -lah $(which ruby) >> $GITHUB_STEP_SUMMARY
           # lrwxrwxrwx 1 root root /usr/bin/ruby -> ruby3.0
-          # sudo update-alternatives --install ruby ...
           sudo update-alternatives --install /usr/bin/ruby ruby /usr/bin/ruby3.0  100
           sudo update-alternatives --set ruby /usr/bin/ruby3.0
+          # /u/b/ruby3.0 provide /usr/bin/ruby (ruby) auto mode
           echo '```' >> $GITHUB_STEP_SUMMARY
+      - name: setup-ruby 3.1.1
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1.1
+      - name: check rubies
+        shell: bash {0}
+        run: |
+          which ruby
+          ruby -v
+          update-alternatives --query ruby
           
