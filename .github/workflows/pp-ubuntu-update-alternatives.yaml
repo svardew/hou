@@ -24,7 +24,7 @@ jobs:
           which ruby >> $GITHUB_STEP_SUMMARY
           ls -lah $(which ruby) >> $GITHUB_STEP_SUMMARY
           # lrwxrwxrwx 1 root root /usr/bin/ruby -> ruby3.0
-          sudo update-alternatives --install /usr/bin/ruby ruby /usr/bin/ruby3.0  100
+          sudo update-alternatives --install /usr/bin/ruby ruby /usr/bin/ruby3.0  30
           sudo update-alternatives --set ruby /usr/bin/ruby3.0
           # /u/b/ruby3.0 provide /usr/bin/ruby (ruby) auto mode
           echo '```' >> $GITHUB_STEP_SUMMARY
@@ -38,4 +38,15 @@ jobs:
           which ruby
           ruby -v
           update-alternatives --query ruby
-          
+      - name: p update-alter
+        shell: bash {0}
+        run: |
+          echo '/** add ruby entry into update-alternatives.'
+          echo ' * which ruby (from PATH) is /opt/toolchain/... via setup-ruby'
+          echo ' */'
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          which ruby >> $GITHUB_STEP_SUMMARY
+          ls -lah $(which ruby) >> $GITHUB_STEP_SUMMARY
+          sudo update-alternatives --install /usr/bin/ruby ruby $(which ruby) 100         sudo update-alternatives --set ruby /usr/bin/ruby3.0
+          update-alternatives --query ruby
+          echo '```' >> $GITHUB_STEP_SUMMAR
