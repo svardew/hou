@@ -22,6 +22,7 @@ jobs:
           echo ' */'
           echo '```' >> $GITHUB_STEP_SUMMARY
           which ruby >> $GITHUB_STEP_SUMMARY
+          ls -lah $(which ruby) >> $GITHUB_STEP_SUMMARY
           # sudo update-alternatives --install ruby ...
           echo '```' >> $GITHUB_STEP_SUMMARY
           
