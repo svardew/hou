@@ -130,11 +130,45 @@ jobs:
           fi
           sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y "${PKGS[@]}"
 
+      # use update-alternatives
+      - name: setup-ruby 3.3.1
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.1
+      - name: update-alternatives ruby33
+        shell: bash {0}
+        run: |
+          echo '/** no ruby entry in update-alternatives.'
+          echo ' * upd-alt --install ruby'
+          echo ' */'
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '#-- toolchain via setup-ruby'
+          which ruby >> $GITHUB_STEP_SUMMARY
+          ls -lah $(which ruby) >> $GITHUB_STEP_SUMMARY
+          echo '#-- ubunut-runner default'
+          ls -lah /usr/bin |grep ruby >> $GITHUB_STEP_SUMMARY
+          # expect
+          # : /opt/hostedtoolcache/Ruby/3.3.1/x64/bin/ruby
+          # : /usr/bin/ruby -> ruby3.0
+          sudo update-alternatives --install /usr/bin/ruby ruby /usr/bin/ruby3.0  30
+          sudo update-alternatives --install /usr/bin/ruby ruby $(which ruby)     70
+          sudo update-alternatives --set ruby $(which ruby)
+          echo '```' >> $GITHUB_STEP_SUMMARY
+      - name: check rubies
+        shell: bash {0}
+        run: |
+          which ruby
+          ruby -v
+          update-alternatives --query ruby
+
+      # not use update-alternatives
       - name: Install ruby-3.3.1
+        if: false
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ruby-3.3.1
       - name: Env values ruby-3.3.1
+        if: false
         run: |
           echo "setup-ruby change ruby path. `which ruby{,-3.3.1} expect same path`"
           echo "/* ruby-3.1.1 is not found $PATH ... # which ruby-3.3.1 */"
@@ -220,10 +254,10 @@ jobs:
           fi
           echo "CFLAGS=${CFLAGS}"
           # append LD_LIBRARY_PATH, PkG_CONFIG_PATH
-          setupruby_libdir=${{ env.SETUPRUBY_LIBDIR }}
-          echo "LD_LIBRARY_PATH=${setupruby_libdir}:$LD_LIBRARY_PATH"
-          setupruby_pkgconfigdir=${{ env.SETUPRUBY_PKGCONFIGDIR }}
-          echo "PKG_CONFIG_PATH=${setupruby_pkgconfigdir}:$PKG_CONFIG_PATH"
+          #-- setupruby_libdir=${{ env.SETUPRUBY_LIBDIR }}
+          #-- echo "LD_LIBRARY_PATH=${setupruby_libdir}:$LD_LIBRARY_PATH"
+          #-- setupruby_pkgconfigdir=${{ env.SETUPRUBY_PKGCONFIGDIR }}
+          #-- echo "PKG_CONFIG_PATH=${setupruby_pkgconfigdir}:$PKG_CONFIG_PATH"
           ) >> $GITHUB_ENV
 
       - name: Set up system
@@ -265,8 +299,8 @@ jobs:
 
       - name: Configure
         run: |
-          export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
-          export PKG_CONFIG_PATH=${{ env.PKG_CONFIG_PATH }}
+          #-- export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
+          #-- export PKG_CONFIG_PATH=${{ env.PKG_CONFIG_PATH }}
           ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing
           # Append various warning flags to CFLAGS.
           sed -i -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
@@ -279,15 +313,15 @@ jobs:
       - name: Build
         if: (!contains(matrix.extra, 'unittests'))
         run: |
-          export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
-          export PKG_CONFIG_PATH=${{ env.PKG_CONFIG_PATH }}
+          #-- export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
+          #-- export PKG_CONFIG_PATH=${{ env.PKG_CONFIG_PATH }}
           make ${SHADOWOPT} -j${NPROC}
 
       - name: Check version
         if: (!contains(matrix.extra, 'unittests'))
         run: |
-          export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
-          export PKG_CONFIG_PATH=${{ env.PKG_CONFIG_PATH }}
+          #-- export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
+          #-- export PKG_CONFIG_PATH=${{ env.PKG_CONFIG_PATH }}
           "${SRCDIR}"/vim --version
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
@@ -295,8 +329,8 @@ jobs:
       - name: Test
         timeout-minutes: 25
         run: |
-          export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
-          export PKG_CONFIG_PATH=${{ env.PKG_CONFIG_PATH }}
+          #-- export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
+          #-- export PKG_CONFIG_PATH=${{ env.PKG_CONFIG_PATH }}
           do_test() { sg audio "sg $(id -gn) '$*'"; }
           do_test make ${SHADOWOPT} ${TEST}
 
