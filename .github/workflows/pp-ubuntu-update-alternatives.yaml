@@ -17,7 +17,7 @@ jobs:
       - name: p update-alter
         shell: bash {0}
         run: |
-          echo '/** no ruby entry in update-alternatives.
+          echo '/** no ruby entry in update-alternatives.'
           echo ' * first upd-alt --install ruby'
           echo ' */'
           echo '```' >> $GITHUB_STEP_SUMMARY
