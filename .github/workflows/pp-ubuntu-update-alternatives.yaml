@@ -47,6 +47,7 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           which ruby >> $GITHUB_STEP_SUMMARY
           ls -lah $(which ruby) >> $GITHUB_STEP_SUMMARY
-          sudo update-alternatives --install /usr/bin/ruby ruby $(which ruby) 100         sudo update-alternatives --set ruby /usr/bin/ruby3.0
+          sudo update-alternatives --install /usr/bin/ruby ruby $(which ruby) 100
+          #sudo update-alternatives --set ruby /usr/bin/ruby3.0
           update-alternatives --query ruby
           echo '```' >> $GITHUB_STEP_SUMMAR
