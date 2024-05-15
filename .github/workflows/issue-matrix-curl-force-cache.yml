@@ -141,25 +141,34 @@ jobs:
       - name: Dir dependencies
         shell: cmd
         run: |
-          dir downloads
+          echo '* ~/downloads' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          dir downloads >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
       - name: Delete repository cache /${{ env.arch }}
         shell: bash {0}
         run: |
-          if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c $KEY) ]; then
-            gh actions-cache delete $KEY -R $REPO --confirm
-            echo 'delete cachce: '$KEY >> $GITHUB_STEP_SUMMARY
-          fi
+          caches=$(gh actions-cache list -R ${{ env.REPO }} | cut -f1)
+          restorekey=${{ env.KEY }}
+          for ky in $caches
+          do
+            if [ "$ky" = "${{ env.KEY }}" ]; then
+              echo "* delete repository cache:" ${{ env.KEY }}
+              gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
+            fi
+          done
         env:
-          kEY: ${{ env.restorekey }}
+          KEY: ${{ env.restorekey }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Save repository cache /${{ env.arch }}
         uses: actions/cache/save@v4
         with:
           path: downloads
-          key: ${{ env.restorekey }}
+          key: ${{ env.KEY }}
           enableCrossOsArchive: true
         env:
+          KEY: ${{ env.restorekey }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Clear restored files /${{ env.arch }}
@@ -214,16 +223,23 @@ jobs:
       - name: Dir dependencies
         shell: cmd
         run: |
-          dir downloads
+          echo '* ~/downloads' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          dir downloads >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
       - name: Delete repository cache /${{ env.arch }}
         shell: bash {0}
         run: |
-          if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c $KEY) ]; then
-            gh actions-cache delete $KEY -R $REPO --confirm
-            echo 'delete cachce: '$KEY >> $GITHUB_STEP_SUMMARY
-          fi
+          caches=$(gh actions-cache list -R ${{ env.REPO }} | cut -f1)
+          for ky in $caches
+          do
+            if [ "$ky" = "${{ env.KEY }}" ]; then
+              echo "* delete repository cache:" ${{ env.KEY }}
+              gh actions-cache delete ${{ env.KEY }} -R ${{ env.REPO }} --confirm
+            fi
+          done
         env:
-          kEY: ${{ env.restorekey }}
+          KEY: ${{ env.restorekey }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Save repository cache /${{ env.arch }}
