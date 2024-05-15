@@ -16,7 +16,151 @@ permissions:
   actions: write # gh extension (actions/gh-actions-cache) delete cache
 
 jobs:
+  wind2022:
+    runs-on: windows-2022
+    env:
+      # Interfaces
+      # Lua
+      LUA_VER: 54
+      LUA_VER_DOT: '5.4'
+      LUA_RELEASE: 5.4.2
+      LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
+      LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
+      LUA_DIR: D:\Lua
+      # do not want \L to end up in pathdef.c and compiler complaining about unknown escape sequences \l
+      LUA_DIR_SLASH: D:/Lua
+      # Python 2
+      PYTHON_VER: 27
+      PYTHON_VER_DOT: '2.7'
+      PYTHON_DIR: 'C:\Python27'
+      # Python 3
+      PYTHON3_VER: 311
+      PYTHON3_VER_DOT: '3.11'
+      # Other dependencies
+      # winpty
+      WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+      # libsodium
+      SODIUM_VER: '1.0.19'
+      SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
+      SODIUM_MSVC_VER: v143
+      SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
+      SODIUM_MINGW_VER: 26
+      # Escape sequences
+      COL_RED: "\x1b[31m"
+      COL_GREEN: "\x1b[32m"
+      COL_YELLOW: "\x1b[33m"
+      COL_RESET: "\x1b[m"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64, python3: stable }
+          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x86, python3: stable, coverage: yes }
+          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: yes, arch: x86 }
+          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: no,  arch: x64, coverage: yes }
+          - { features: NORMAL, toolchain: msvc,  VIMDLL: yes, GUI: no,  arch: x86 }
+          - { features: NORMAL, toolchain: mingw, VIMDLL: no,  GUI: yes, arch: x64 }
+          - { features: TINY,   toolchain: msvc,  VIMDLL: yes, GUI: yes, arch: x64 }
+          - { features: TINY,   toolchain: mingw, VIMDLL: no,  GUI: no,  arch: x86 }
+    steps:
+      - name: Initialize
+        id: init
+        shell: bash
+        run: |
+          #-- # Show Windows version
+          #-- cmd /c ver
+          git config --global core.autocrlf input
+          if ${{ matrix.arch == 'x64' }}; then
+            cygreg=registry
+            pyreg=
+            echo "VCARCH=amd64" >> $GITHUB_ENV
+            echo "WARCH=x64" >> $GITHUB_ENV
+            echo "BITS=64" >> $GITHUB_ENV
+            echo "MSYSTEM=MINGW64" >> $GITHUB_ENV
+          else
+            cygreg=registry32
+            pyreg=-32
+            echo "VCARCH=x86" >> $GITHUB_ENV
+            echo "WARCH=ia32" >> $GITHUB_ENV
+            echo "BITS=32" >> $GITHUB_ENV
+            echo "MSYSTEM=MINGW32" >> $GITHUB_ENV
+          fi
+          echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
+          # omit python2 and python3
+      - uses: msys2/setup-msys2@v2
+        if: matrix.toolchain == 'mingw'
+        with:
+          update: true
+          install: tar
+          pacboy: >-
+            make:p gcc:p
+          msystem: ${{ env.MSYSTEM }}
+          release: false
+      - name: Checkout repository from github
+        uses: actions/checkout@v4
+        with:
+          repository: svardew/vim
+          path: vim
+      - name: Create a list of download URLs
+        shell: cmd
+        run: |
+          type NUL > urls.txt
+          echo %LUA_RELEASE%>> urls.txt
+          echo %WINPTY_URL%>> urls.txt
+          echo %SODIUM_VER%>> urls.txt
+      - name: Cache downloaded files
+        uses: actions/cache@v4
+        with:
+          path: downloads
+          key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('urls.txt') }}
+      - name: Download dependencies
+        shell: cmd
+        run: |
+          path C:\Program Files\7-Zip;%path%
+          if not exist downloads mkdir downloads
+          echo %COL_GREEN%Download Lua%COL_RESET%
+          call :downloadfile %LUA${{ env.BITS }}_URL% downloads\lua.zip
+          7z x downloads\lua.zip -o%LUA_DIR% > nul || exit 1
+
+          echo %COL_GREEN%Download winpty%COL_RESET%
+          call :downloadfile %WINPTY_URL% downloads\winpty.zip
+          7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
+          copy /Y D:\winpty\%WARCH%\bin\winpty.dll        src\winpty%BITS%.dll
+          copy /Y D:\winpty\%WARCH%\bin\winpty-agent.exe  src\
+
+          echo %COL_GREEN%Download libsodium%COL_RESET%
+          if "${{ matrix.toolchain }}"=="msvc" (
+            call :downloadfile %SODIUM_MSVC_URL% downloads\libsodium.zip
+            7z x -y downloads\libsodium.zip -oD:\ > nul || exit 1
+          ) else (
+            call :downloadfile %SODIUM_MINGW_URL% downloads\libsodium.tar.gz
+            7z x -y downloads\libsodium.tar.gz -so | 7z x -si -ttar -oD:\ > nul || exit 1
+            mklink %SODIUM_LIB%\libsodium.dll %SODIUM_LIB%\libsodium-%SODIUM_MINGW_VER%.dll
+          )
+
+          goto :eof
+
+          :downloadfile
+          :: call :downloadfile <URL> <localfile>
+          if exist %2 (
+            echo skip download. file exist %2
+          )
+          if not exist %2 (
+            curl -f -L %1 -o %2
+          )
+          if ERRORLEVEL 1 (
+            rem Retry once.
+            curl -f -L %1 -o %2 || exit 1
+          )
+          goto :eof
+
+      - name: Download dependencies
+        shell: cmd
+        run: |
+          dir downloads
+
   windows:
+    if: false
     runs-on: ubuntu-latest
 
     strategy:
