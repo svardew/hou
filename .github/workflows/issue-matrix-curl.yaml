@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        numbers: [one, two, three, four, five, six, seven, eight, nine]
+        numbers: [one, two, three, four, five]
         seasons: [spring, summer, autumn, winter]
 
     env:
@@ -42,6 +42,10 @@ jobs:
         with:
           path: vim
           repository: ${{ env.REPO_VIM }}
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.0
 
       - name: Set up environment
         if: false
@@ -207,6 +211,9 @@ jobs:
           dlf2 ${{ env.LISBN_TAR_URL }} ${{ env.LISBN_TAR_SAVEAS }}
           echo '~ checksum ~' ${{ matrix.numbers }}-${{ matrix.seasons }} >> $GITHUB_STEP_SUMMARY
           md5sum * >> $GITHUB_STEP_SUMMARY
+          echo '~ setup-ruby ~' ${{ matrix.numbers }}-${{ matrix.seasons }} >> $GITHUB_STEP_SUMMARY
+          which ruby >> $GITHUB_STEP_SUMMARY
+          ruby -v >> $GITHUB_STEP_SUMMARY
 
       - name: summary
         if: false
