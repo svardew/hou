@@ -110,17 +110,21 @@ jobs:
         run: |
           path C:\Program Files\7-Zip;%path%
           if not exist downloads mkdir downloads
-          rem ///
+
           echo %COL_GREEN%Download Lua%COL_RESET%
           call :downloadfile %LUA${{ env.BITS }}_URL% downloads\lua.zip
-          7z x downloads\lua.zip -o%LUA_DIR% > nul || exit 1
+
           echo %COL_GREEN%Download winpty%COL_RESET%
           call :downloadfile %WINPTY_URL% downloads\winpty.zip
+
           echo %COL_GREEN%Download libsodium msvc%COL_RESET%
           call :downloadfile %SODIUM_MSVC_URL% downloads\libsodium.zip
+
           echo %COL_GREEN%Download libsodium mingw%COL_RESET%
           call :downloadfile %SODIUM_MINGW_URL% downloads\libsodium.tar.gz
+
           goto :eof
+
           :downloadfile
           :: call :downloadfile <URL> <localfile>
           if exist %2 (
@@ -133,6 +137,7 @@ jobs:
             curl -f -L %1 -o %2 || exit 1
           )
           goto :eof
+
       - name: Dir dependencies
         shell: cmd
         run: |
