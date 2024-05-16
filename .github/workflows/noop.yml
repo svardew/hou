@@ -13,9 +13,8 @@ jobs:
         with:
           enableCrossOsArchive: true
           key: ${{ env.XKEY }}
-          path: nooptmpdir
       - name: ls setup-msys2 cache
-        run: tree nooptmpdir
+        run: test -d nooptmpdir || tree nooptmpdir
       - name: bye
         run: |
           echo "${{ env.XKEY }}"
