@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/cache/restore@v4
         with:
-          enableCrossOsArchvie: true
+          enableCrossOsArchive: true
           key: ${{ env.XKEY }}
           path: nooptmpdir
       - name: ls setup-msys2 cache
