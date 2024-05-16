@@ -1,0 +1,23 @@
+name: noop wf_dispatch snippet
+on:
+  workflow_dispatch:
+
+jobs:
+  cachecheck:
+    runs-on: ubuntu-latest
+    env:
+      XKEY: 'msys2-pkgs-upd:true-conf:bcb43f5a-files:9f966a430716d0ddb418f9da59736eb7f5f4d9c9'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache/restore@v4
+        with:
+          enableCrossOsArchvie: true
+          key: ${{ env.XKEY }}
+          path: nooptmpdir
+      - name: ls setup-msys2 cache
+        run: tree nooptmpdir
+      - name: bye
+        run: |
+          echo "${{ env.XKEY }}"
+          echo bye
+          echo test, and deploy your project.
