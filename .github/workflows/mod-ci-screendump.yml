@@ -294,21 +294,21 @@ jobs:
           )
 
       - name: Generate gcov files
-        if: matrix.coverage
+        if: matrix.coverage && false
         run: |
           cd "${SRCDIR}"
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
       - name: Codecov
         timeout-minutes: 20
-        if: matrix.coverage
+        if: matrix.coverage && false
         uses: codecov/codecov-action@v4
         with:
           flags: linux,${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: ASan logs
-        if: contains(matrix.extra, 'asan') && !cancelled()
+        if: contains(matrix.extra, 'asan') && !cancelled() && false
         run: |
           for f in $(grep -lR '#[[:digit:]]* *0x[[:xdigit:]]*' "${LOG_DIR}"); do
             asan_symbolize -l "$f"
@@ -715,7 +715,7 @@ jobs:
         uses: ./.github/actions/screendump
 
       - name: Generate gcov files
-        if: matrix.coverage
+        if: matrix.coverage && false
         shell: msys2 {0}
         run: |
           cd src
@@ -723,7 +723,7 @@ jobs:
 
       - name: Codecov
         timeout-minutes: 20
-        if: matrix.coverage
+        if: matrix.coverage && false
         uses: codecov/codecov-action@v4
         with:
           directory: src
