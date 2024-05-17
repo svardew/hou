@@ -12,6 +12,9 @@ concurrency:
 
 permissions:
   contents: read # to fetch code (actions/checkout)
+env:
+  # myenv
+  MYVIM_REPO: ${{ github.repository_owner }}/vim
 
 jobs:
   linux:
@@ -28,8 +31,6 @@ jobs:
       TERM: xterm
       DISPLAY: ':99'
       DEBIAN_FRONTEND: noninteractive
-      # myenv
-      MYVIM_REPO: ${{ github.repository_owner }}/vim
 
     strategy:
       fail-fast: false
@@ -78,7 +79,12 @@ jobs:
             extra: [vimtags]
 
     steps:
-      - name: Checkout repository from github
+      - name: Checkout repo. fetch .gh/actions/FOO
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+
+      - name: Checkout repo. vim
         uses: actions/checkout@v4
         with:
           repository: ${{ env.MYVIM_REPO }}
