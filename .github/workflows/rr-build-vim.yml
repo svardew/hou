@@ -31,7 +31,7 @@ jobs:
       TERM: xterm
       DISPLAY: ':99'
       DEBIAN_FRONTEND: noninteractive
-      DEBFILECACHEDIR: _debcache
+      DEBFILECACHEDIR: debcache
 
     permissions:
       actions: write
