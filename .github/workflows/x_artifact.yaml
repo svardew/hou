@@ -49,7 +49,7 @@ jobs:
           repository: svardew/vim
 
       - name: upload-artifact
-        uses: svardew/hou/.github/workflows/x_screendump/action.yml
+        uses: svardew/hou/.github/workflows/x_screendump/action.yml@de0a3c42c067f3000d40debfc64a41e8d7a4f78e
 
   macos:
     runs-on: ${{ matrix.runner }}
@@ -74,7 +74,7 @@ jobs:
           repository: svardew/vim
 
       - name: upload-artifact
-        uses: svardew/hou/.github/workflows/x_screendump/action.yml
+        uses: svardew/hou/.github/workflows/x_screendump/action.yml@de0a3c42c067f3000d40debfc64a41e8d7a4f78e
 
   windows:
     runs-on: windows-2022
@@ -187,5 +187,5 @@ jobs:
           repository: svardew/vim
 
       - name: upload-artifact
-        uses: svardew/hou/.github/workflows/x_screendump/action.yml
+        uses: svardew/hou/.github/workflows/x_screendump/action.yml@de0a3c42c067f3000d40debfc64a41e8d7a4f78e
 
