@@ -1,0 +1,38 @@
+name: 'x_screendump'
+description: "try with.path setting for Upload artifact"
+runs:
+  using: "composite"
+  steps:
+    # jobs [linux, windows, macos]
+    # matrix [TINY, NORM, HUGE]
+    - name: _a_ Upload artifact with github.workspace path prefix
+      uses: actions/upload-artifact@v4
+      with:
+        name: a-${{ github.workflow }}-${{ github.job }}-${{ join(matrix.*, '-') }}-failed-syntax-tests
+        path: |
+         ${{ github.workspace }}/runtime/syntax/testdir/failed/z*.vim
+         ${{ github.workspace }}/src/testdir/failed/Make*
+        if-no-files-found: ignore
+        retention-days: 0
+        overwrite: true
+    - name: _b_ Upload artifact without github.workspace path prefix
+      uses: actions/upload-artifact@v4
+      with:
+        name: b-${{ github.workflow }}-${{ github.job }}-${{ join(matrix.*, '-') }}-failed-syntax-tests
+        path: |
+         runtime/syntax/testdir/failed/z*.vim
+         src/testdir/failed/Make*
+        if-no-files-found: ignore
+        retention-days: 0
+        overwrite: true
+    - name: _c_ Upload artifact with tilde expansion path prefix
+      uses: actions/upload-artifact@v4
+      with:
+        name: c-${{ github.workflow }}-${{ github.job }}-${{ join(matrix.*, '-') }}-failed-syntax-tests
+        path: |
+         runtime/syntax/testdir/failed/z*.vim
+         src/testdir/failed/Make*
+        if-no-files-found: ignore
+        retention-days: 0
+        overwrite: true
+
