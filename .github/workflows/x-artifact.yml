@@ -151,9 +151,11 @@ jobs:
 
       - name: mv files into .github/
         # shell: bash {0}
+        # https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/tree
         run: |
-          dir /r ${{ env.SPARSE_DIR }}
-          echo 'mv files'
+          # dir /s .\${{ env.SPARSE_DIR }}
+          tree .\${{ env.SPARSE_DIR }}
+          echo mv files
           copy /y ${{ env.SPARSE_DIR }}\.github\workflows\x-artifact.yml .\.github\workflows\
           mkdir ${{ env.SPARSE_DIR }}\.github\actions\x-screendump .\.github\actions\x-screendump
           copy /y ${{ env.SPARSE_DIR }}\.github\actions\x-screendump\action.yml .\.github\actions\x-screendump
