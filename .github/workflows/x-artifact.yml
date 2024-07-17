@@ -110,6 +110,7 @@ jobs:
       COL_GREEN: "\x1b[32m"
       COL_YELLOW: "\x1b[33m"
       COL_RESET: "\x1b[m"
+      SPARSE_DIR: .github_sparse_checkout
 
     strategy:
       fail-fast: false
@@ -138,6 +139,24 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: svardew/vim
+
+      - name: Checkout sparse files
+        uses: actions/checkout@v4
+        with:
+          repository: svardew/hou
+          path: ${{ env.SPARSE_DIR }}
+          sparse-checkout: |
+            .github/workflows/x-artifact.yaml
+            .github/actions/x-screendump/action.yml
+
+      - name: mv files into .github/
+        # shell: bash {0}
+        run: |
+          dir /r ${{ env.SPARSE_DIR }}
+          echo 'mv files'
+          copy /y ${{ env.SPARSE_DIR }}\.github\workflows\x-artifact.yml .\.github\workflows\
+          mkdir ${{ env.SPARSE_DIR }}\.github\actions\x-screendump .\.github\actions\x-screendump
+          copy /y ${{ env.SPARSE_DIR }}\.github\actions\x-screendump\action.yml .\.github\actions\x-screendump
 
       - name: force upload-artifact
         uses: ./.github/actions/x-screendump
