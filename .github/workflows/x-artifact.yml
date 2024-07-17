@@ -71,7 +71,7 @@ jobs:
 
       - name: force chdir
         shell: bash
-        run: cd ${{ github.workspace }}/vim
+        run: cd ${{ github.workspace }}/READMEdir
 
       - name: force upload-artifact
         uses: ./.github/actions/x-screendump
