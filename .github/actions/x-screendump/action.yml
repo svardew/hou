@@ -35,4 +35,15 @@ runs:
         if-no-files-found: ignore
         retention-days: 0
         overwrite: true
+    - name: _d_ Upload artifact with root variable
+      uses: actions/upload-artifact@v4
+      with:
+        name: d-${{ github.workflow }}-${{ github.job }}-${{ join(matrix.*, '-') }}-failed-syntax-tests
+        root: ${{ github.workspace }}
+        path: |
+         runtime/syntax/testdir/z*.vim
+         src/testdir/Make*
+        if-no-files-found: ignore
+        retention-days: 0
+        overwrite: true
 
