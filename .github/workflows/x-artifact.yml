@@ -101,45 +101,45 @@ jobs:
 #-       - name: force upload-artifact
 #-         uses: ./.github/actions/x-screendump
 #- 
-#-   windows:
-#-     runs-on: windows-2022
-#- 
-#-     env:
-#-       # Escape sequences
-#-       COL_RED: "\x1b[31m"
-#-       COL_GREEN: "\x1b[32m"
-#-       COL_YELLOW: "\x1b[33m"
-#-       COL_RESET: "\x1b[m"
-#- 
-#-     strategy:
-#-       fail-fast: false
-#-       matrix:
-#-         include:
-#-           - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64, python3: stable }
-#-           - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x86, python3: stable, coverage: yes }
-#-           - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: yes, arch: x86 }
-#-           - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: no,  arch: x64, coverage: yes }
-#-           - { features: NORMAL, toolchain: msvc,  VIMDLL: yes, GUI: no,  arch: x86 }
-#-           - { features: NORMAL, toolchain: mingw, VIMDLL: no,  GUI: yes, arch: x64 }
-#-           - { features: TINY,   toolchain: msvc,  VIMDLL: yes, GUI: yes, arch: x64 }
-#-           - { features: TINY,   toolchain: mingw, VIMDLL: no,  GUI: no,  arch: x86 }
-#- 
-#-     steps:
-#-       - name: Initialize
-#-         id: init
-#-         shell: bash
-#-         run: |
-#-           # Show Windows version
-#-           cmd /c ver
-#- 
-#-           git config --global core.autocrlf input
-#- 
-#-       - name: Checkout repository from github
-#-         uses: actions/checkout@v4
-#-         with:
-#-           repository: svardew/vim
-#- 
-#-       - name: force upload-artifact
-#-         uses: ./.github/actions/x-screendump
+  windows:
+    runs-on: windows-2022
+
+    env:
+      # Escape sequences
+      COL_RED: "\x1b[31m"
+      COL_GREEN: "\x1b[32m"
+      COL_YELLOW: "\x1b[33m"
+      COL_RESET: "\x1b[m"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64, python3: stable }
+          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x86, python3: stable, coverage: yes }
+          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: yes, arch: x86 }
+          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: no,  arch: x64, coverage: yes }
+          - { features: NORMAL, toolchain: msvc,  VIMDLL: yes, GUI: no,  arch: x86 }
+          - { features: NORMAL, toolchain: mingw, VIMDLL: no,  GUI: yes, arch: x64 }
+          - { features: TINY,   toolchain: msvc,  VIMDLL: yes, GUI: yes, arch: x64 }
+          - { features: TINY,   toolchain: mingw, VIMDLL: no,  GUI: no,  arch: x86 }
+
+    steps:
+      - name: Initialize
+        id: init
+        shell: bash
+        run: |
+          # Show Windows version
+          cmd /c ver
+
+          git config --global core.autocrlf input
+
+      - name: Checkout repository from github
+        uses: actions/checkout@v4
+        with:
+          repository: svardew/vim
+
+      - name: force upload-artifact
+        uses: ./.github/actions/x-screendump
 
 
