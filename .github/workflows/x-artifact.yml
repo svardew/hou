@@ -28,7 +28,7 @@ jobs:
       TERM: xterm
       DISPLAY: ':99'
       DEBIAN_FRONTEND: noninteractive
-      SPARRSE_DIR: .github_sparse_checkout
+      SPARSE_DIR: .github_sparse_checkout
 
     strategy:
       fail-fast: false
@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: svardew/hou
-          path: ${{ env.SPARRSE_DIR }}
+          path: ${{ env.SPARSE_DIR }}
           sparse-checkout: |
             .github/workflows/x-artifact.yaml
             .github/actions/x-screendump/action.yml
