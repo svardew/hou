@@ -64,9 +64,12 @@ jobs:
         shell: bash {0}
         run: |
           ls -la ${{ env.SPARSE_DIR }}/
+          tree ${{ env.SPARSE_DIR }}/.github/
+          echo 'mv files'
+          cp -Rvn ${{ env.SPARSE_DIR }}/.github/workflows/x-artifact.yml ./.github/workflows/
+          cp -Rvn ${{ env.SPARSE_DIR }}/.github/actions/x-screendump ./.github/actions/
 
-      - if: false
-        name: force upload-artifact
+      - name: force upload-artifact
         uses: ./.github/actions/x-screendump
 
 #-   macos:
