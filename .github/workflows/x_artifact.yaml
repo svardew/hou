@@ -50,6 +50,17 @@ jobs:
         with:
           repository: svardew/vim
 
+      - name: modify .github/actions : Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: svardew/hou
+          path: ./_hou
+
+      - name: modify .github/actions : Copy
+        shell: bash {0}
+        run: |
+          cp -Rvn ./_hou/.github/actions/x-screendump ./.github/actions/
+
       - name: force upload-artifact
         uses: ./.github/actions/x-screendump
 
@@ -74,6 +85,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: svardew/vim
+
+      - name: modify .github/actions : Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: svardew/hou
+          path: ./_hou
+
+      - name: modify .github/actions : Copy
+        shell: bash {0}
+        run: |
+          cp -Rvn ./_hou/.github/actions/x-screendump ./.github/actions/
 
       - name: force upload-artifact
         uses: ./.github/actions/x-screendump
