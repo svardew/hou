@@ -10,8 +10,8 @@ runs:
       with:
         name: a-${{ github.workflow }}-${{ github.job }}-${{ join(matrix.*, '-') }}-failed-syntax-tests
         path: |
-         ${{ github.workspace }}/runtime/syntax/testdir/failed/z*.vim
-         ${{ github.workspace }}/src/testdir/failed/Make*
+         ${{ github.workspace }}/runtime/syntax/testdir/z*.vim
+         ${{ github.workspace }}/src/testdir/Make*
         if-no-files-found: ignore
         retention-days: 0
         overwrite: true
@@ -20,8 +20,8 @@ runs:
       with:
         name: b-${{ github.workflow }}-${{ github.job }}-${{ join(matrix.*, '-') }}-failed-syntax-tests
         path: |
-         runtime/syntax/testdir/failed/z*.vim
-         src/testdir/failed/Make*
+         runtime/syntax/testdir/z*.vim
+         src/testdir/Make*
         if-no-files-found: ignore
         retention-days: 0
         overwrite: true
@@ -30,8 +30,8 @@ runs:
       with:
         name: c-${{ github.workflow }}-${{ github.job }}-${{ join(matrix.*, '-') }}-failed-syntax-tests
         path: |
-         runtime/syntax/testdir/failed/z*.vim
-         src/testdir/failed/Make*
+         ~/runtime/syntax/testdir/z*.vim
+         ~/src/testdir/Make*
         if-no-files-found: ignore
         retention-days: 0
         overwrite: true
