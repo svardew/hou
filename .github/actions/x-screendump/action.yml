@@ -3,7 +3,7 @@ description: "Force Upload some files"
 runs:
   using: "composite"
   steps:
-    - name: Force Upload some files (x: prefix github.workspace)
+    - name: 'Force Upload some files (x: prefix github.workspace)'
       uses: actions/upload-artifact@v4
       with:
         # Name of the artifact to upload.
@@ -21,7 +21,7 @@ runs:
         retention-days: 0
         # If true, an artifact with a matching name will be deleted
         overwrite: true
-    - name: Force Upload some files (y: prefix none)
+    - name: 'Force Upload some files (y: prefix none)'
       uses: actions/upload-artifact@v4
       with:
         # Name of the artifact to upload.
@@ -39,7 +39,7 @@ runs:
         retention-days: 0
         # If true, an artifact with a matching name will be deleted
         overwrite: true
-    - name: Force Upload some files (z: tilde expansion)
+    - name: 'Force Upload some files (z: tilde expansion)'
       uses: actions/upload-artifact@v4
       if: false
       # tilde expansion refer to $HOME, so actions/checkout into $HOME/<OWNER>/<REPO> mismath
