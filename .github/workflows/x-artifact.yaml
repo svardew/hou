@@ -73,7 +73,8 @@ jobs:
 
   macos:
     runs-on: ${{ matrix.runner }}
-    if: ${{ github.event_name == 'workflow_dispatch' }} && false
+    # if: ${{ github.event_name == 'workflow_dispatch' }} || false
+    if: false
 
     env:
       CC: clang
@@ -108,7 +109,8 @@ jobs:
 
   windows:
     runs-on: windows-2022
-    if: ${{ github.event_name == 'workflow_dispatch' }} && false
+    # if: ${{ github.event_name == 'workflow_dispatch' }}
+    if: false
 
     env:
       # Escape sequences
