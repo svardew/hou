@@ -164,9 +164,10 @@ jobs:
         #runplz:: copy .\${{ env.SPARSE_CHECKOUT_DIR }}\.github\actions\x-screendump\action.yml  .\.github\actions\x-screendump\  /f /s
         shell: cmd
         run: |
-          tree .\${{ env.SPARSE_CHECKOUT_DIR }} /a
+          tree .\${{ env.SPARSE_CHECKOUT_DIR }} /f
 
       - name: force upload-artifact
+        if: false
         uses: ./.github/actions/x-screendump
 
 
