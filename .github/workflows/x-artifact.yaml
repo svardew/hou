@@ -156,6 +156,7 @@ jobs:
         with:
           repository: svardew/hou
           ref: try-uploadartifact
+          path: ${{ env.SPARSE_CHECKOUT_DIR }}
           sparse-checkout: |
            .github/actions/x-screendump/action.yml
 
