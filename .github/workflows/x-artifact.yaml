@@ -32,6 +32,7 @@ jobs:
       TERM: xterm
       DISPLAY: ':99'
       DEBIAN_FRONTEND: noninteractive
+      SPARSE_CHECKOUT_DIR: .github_sparce_checkout
 
     strategy:
       fail-fast: false
@@ -59,16 +60,20 @@ jobs:
         with:
           repository: svardew/hou
           ref: try-uploadartifact
+          path: ${{ env.SPARSE_CHECKOUT_DIR }}
           sparse-checkout: |
-           .github/actions/x-screendump/action.yml
-           .github/workflows/x-artifact.yaml
+            .github/actions/x-screendump/action.yml
+
+      - name: add composite action
+        run: |
+          mv -vn ${{ env.SPARSE_CHECKOUT_DIR }}/.github/actions/x-screendump ./.github/actions/
 
       - name: force upload-artifact
         uses: ./.github/actions/x-screendump
 
   macos:
     runs-on: ${{ matrix.runner }}
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' }} && false
 
     env:
       CC: clang
@@ -103,7 +108,7 @@ jobs:
 
   windows:
     runs-on: windows-2022
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' }} && false
 
     env:
       # Escape sequences
