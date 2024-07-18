@@ -161,10 +161,10 @@ jobs:
            .github/actions/x-screendump/action.yml
 
       - name: add composite action
+        #runplz:: copy .\${{ env.SPARSE_CHECKOUT_DIR }}\.github\actions\x-screendump\action.yml  .\.github\actions\x-screendump\  /f /s
         shell: cmd
         run: |
-          tree .\${{ env.SPARSE_CHECKOUT_DIR }}
-          # copy .\${{ env.SPARSE_CHECKOUT_DIR }}\.github\actions\x-screendump\action.yml  .\.github\actions\x-screendump\  /f /s
+          tree .\${{ env.SPARSE_CHECKOUT_DIR }} /a
 
       - name: force upload-artifact
         uses: ./.github/actions/x-screendump
