@@ -158,7 +158,7 @@ jobs:
           ref: try-uploadartifact
           path: ${{ env.SPARSE_CHECKOUT_DIR }}
           sparse-checkout: |
-           .github/actions/x-screendump/action.yml
+            .github/actions/x-screendump/action.yml
 
       - name: add composite action
         #runplz:: copy .\${{ env.SPARSE_CHECKOUT_DIR }}\.github\actions\x-screendump\action.yml  .\.github\actions\x-screendump\  /f /s
