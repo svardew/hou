@@ -58,10 +58,9 @@ jobs:
         with:
           repository: svardew/hou
           ref: try-uploadartifact
-          with:
-            sparse-checkout: |
-              .github/actions/x-screendump/action.yml
-              .github/workflows/x-artifact.yaml
+          sparse-checkout: |
+           .github/actions/x-screendump/action.yml
+           .github/workflows/x-artifact.yaml
 
       - name: force upload-artifact
         uses: ./.github/actions/x-screendump
