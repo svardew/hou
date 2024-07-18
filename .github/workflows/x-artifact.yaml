@@ -53,6 +53,16 @@ jobs:
         with:
           repository: svardew/vim
 
+      - name: Checkout sparse files for actions and workflows
+        uses: actions/checkout@v4
+        with:
+          repository: svardew/hou
+          ref: try-uploadartifact
+          with:
+            sparse-checkout: |
+              .github/actions/x-screendump/action.yml
+              .github/workflows/x-artifact.yaml
+
       - name: force upload-artifact
         uses: ./.github/actions/x-screendump
 
