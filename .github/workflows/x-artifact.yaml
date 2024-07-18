@@ -162,7 +162,7 @@ jobs:
       - name: add composite action
         shell: cmd
         run: |
-          xcopy /f /s ${{ env.SPARSE_CHECKOUT_DIR }}\.github\actions\x-screendump .\.github\actions\
+          xcopy /f /s ${{ env.SPARSE_CHECKOUT_DIR }}\.github\actions\x-screendump\ .\.github\actions\
 
       - name: force upload-artifact
         uses: ./.github/actions/x-screendump
