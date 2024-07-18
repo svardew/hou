@@ -159,7 +159,11 @@ jobs:
           ref: try-uploadartifact
           sparse-checkout: |
            .github/actions/x-screendump/action.yml
-           .github/workflows/x-artifact.yaml
+
+      - name: add composite action
+        shell: cmd
+        run: |
+          xcopy /f /s ${{ env.SPARSE_CHECKOUT_DIR }}\.github\actions\x-screendump .\.github\actions\
 
       - name: force upload-artifact
         uses: ./.github/actions/x-screendump
