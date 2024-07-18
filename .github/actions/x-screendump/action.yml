@@ -41,6 +41,8 @@ runs:
         overwrite: true
     - name: Force Upload some files (z: tilde expansion)
       uses: actions/upload-artifact@v4
+      if: false
+      # tilde expansion refer to $HOME, so actions/checkout into $HOME/<OWNER>/<REPO> mismath
       with:
         # Name of the artifact to upload.
         name: y-${{ github.workflow }}-${{ github.job }}-${{ join(matrix.*, '-') }}-some-files
