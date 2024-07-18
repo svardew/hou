@@ -113,8 +113,7 @@ jobs:
 
   windows:
     runs-on: windows-2022
-    # if: ${{ github.event_name == 'workflow_dispatch' }}
-    if: false
+    if: ${{ github.event_name == 'workflow_dispatch' }}
 
     env:
       # Escape sequences
