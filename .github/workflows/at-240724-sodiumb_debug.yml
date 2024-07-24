@@ -246,11 +246,11 @@ jobs:
 
       - name: Enable debug build
         run: |
-          echo '--- modify [CLAGS = -g ] and [STRIP = /bin/true]'
-          sed -i "/^#CFLAGS\s=\s-g/ s,^#,," src/Makfile
-          sed -i "/^#STRIP\s=\s\/bin\/true/ s:^#::" src/Makefile
           echo '--- check current libsodium-dev'
           apt list libsodium-dev
+          echo '--- modify [CFLAGS = -g ] and [STRIP = /bin/true]'
+          sed -i "/^#CFLAGS\s=\s-g/ s,^#,," src/Makefile
+          sed -i "/^#STRIP\s=\s\/bin\/true/ s:^#::" src/Makefile
 
       - name: Configure
         run: |
