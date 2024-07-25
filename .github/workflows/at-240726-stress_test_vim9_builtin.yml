@@ -32,18 +32,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        features: [huge] # features: [tiny, normal, huge]
-        compiler: [gcc] # compiler: [clang, gcc]
+        features: [huge, normal] # features: [tiny, normal, huge]
+        compiler: [gcc, clang] # compiler: [clang, gcc]
         extra: [[]]
         # Only use non-native architecture when features != huge.
         # features=huge tries to install python3-dev, which fails to install
         # for the non-native architecture.
         architecture: [native]
         include:
-          - features: [huge, normal]
-            compiler: [gcc, clang]
-            extra: [nogui]
-          - features: normal
+          - features: huge
             shadow: ./src/shadow
             compiler: gcc
             architecture: i386
