@@ -217,6 +217,10 @@ jobs:
             echo "TEST=-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
           fi
           echo "CFLAGS=${CFLAGS}"
+          if ${{ contains(matrix.architecture, 'i386') }}; then
+            INTERFACE=no; PYTHON3_CONFOPT=''
+            echo "CONFOPT=--disable-perlinterp --disable-pythoninterp --disable-python3interp --disable-rubyinterp --disable-luainterp --disable-tclinterp"
+          fi
           ) >> $GITHUB_ENV
 
       - name: Set up system
