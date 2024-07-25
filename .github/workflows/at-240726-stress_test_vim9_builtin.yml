@@ -40,9 +40,13 @@ jobs:
         # for the non-native architecture.
         architecture: [native]
         include:
-          - features: huge
+          - features: [huge, normal]
+            compiler: [gcc, clang]
+            extra: [nogui]
+          - features: normal
+            shadow: ./src/shadow
             compiler: gcc
-            extra: []
+            architecture: i386
           #-default- - features: huge
           #-default-   compiler: gcc
           #-default-   extra: [nogui]
@@ -285,8 +289,8 @@ jobs:
           mkdir -p $logdir
           cd "${SRCDIR}"/testdir
           make clean
-          echo 'do test_vim9_builtin mutli times'
-          for i in $(seq 1 15)
+          echo '/** do test_vim9_builtin mutli times */'
+          for i in $(seq 1 100)
           do
             logfile=log_$(( 900000 + $i ))_diff
             make test_vim9_builtin TEST_FILTER=win_gotoid_in_mapping
@@ -298,8 +302,9 @@ jobs:
             make clean
             sleep 1
           done
-          ls -la $logdir
-          md5sum ${logdir}/log_*
+          echo '/** failed dumps exist? */'
+          tree $logdir
+          find $logdir -type f -name 'log_*_diff' -exec md5sum \{\} \+
 
   macos:
     runs-on: ${{ matrix.runner }}
