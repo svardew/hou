@@ -48,6 +48,7 @@ jobs:
           # cat ${{ env.CACHEDIR }}/SHA256SUMS | sort > ./SHA256SUMS-repocache
       - name: apt update
         run: |
+          sudo dpkg --add-architecture i386
           echo 'add gcc,llvm repos. then update pakcage.bin once'
           # add repository
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
