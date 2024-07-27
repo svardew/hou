@@ -94,7 +94,7 @@ jobs:
           GCC_VER: 13
           CLANG_VER: 18
 
-      - naME: copy apt cache into homedir
+      - name: copy apt cache into homedir
         shell: bash {0}
         run: |
           cp -n /var/cache/apt/archives/*.deb ./${{ env.CACHEDIR }}
