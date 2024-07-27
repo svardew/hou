@@ -38,20 +38,34 @@ jobs:
         with:
           path: ${{ env.CACHEDIR }}
           key: ${{ runner.os }}-debfiles
-      - name: Restore system apt cache
+      - name: Copy deb cache into system cache dir
         continue-on-error: true # in case no deb files
         shell: bash {0}
         run: |
-          sudo cp -n ${{ env.CACHEDIR }}/*.deb /var/cache/apt/archives/
-          cat ${{ env.CACHEDIR }}/SHA256SUMS | sort > ./SHA256SUMS-repocache
-          echo '/* list restored file */'
+          echo '/** These restored deb files are copy into /var/cache/apt/archives  */'
           find ${{ env.CACHEDIR }} -type f -name '*.deb'
+          sudo cp -n ${{ env.CACHEDIR }}/*.deb /var/cache/apt/archives/
+          # cat ${{ env.CACHEDIR }}/SHA256SUMS | sort > ./SHA256SUMS-repocache
+      - name: apt update
+        run: |
+          echo 'add gcc,llvm repos. then update pakcage.bin once'
+          # add repository
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          . /etc/lsb-release
+          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }} main"
+          # update once
+          sudo apt-get update
+        env:
+          GCC_VER: 13
+          CLANG_VER: 18
       - name: apt upgrade --download
         run: |
-          sudo apt-get update
+          # system upgrade deb files
           sudo apt-get upgrade --download-only -y
       - name: apt install --download
         run: |
+          # dependencies deb files
           PKGS=( \
             gettext \
             desktop-file-utils \
@@ -70,15 +84,24 @@ jobs:
             libattr1-dev
           )
           sudo apt-get install --download-only -y "${PKGS[@]}"
-          echo '/* list system cache file */'
-          find /var/cache/apt/archives -maxdepth 1 -type f -name '*.deb'
-      - name: Copy apt cache into homedir
+          # echo '/* list system cache file */'
+          # find /var/cache/apt/archives -maxdepth 1 -type f -name '*.deb'
+          # gcc, clang toolchains deb files
+          sudo apt-get install --download-only -y gcc-${{ env.GCC_VER }}
+          sudo apt-get install --download-only -y gcc-${{ env.GCC_VER }}:i386
+          sudo apt-get install --download-only -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
+        env:
+          GCC_VER: 13
+          CLANG_VER: 18
+
+      - naME: copy apt cache into homedir
         shell: bash {0}
         run: |
           cp -n /var/cache/apt/archives/*.deb ./${{ env.CACHEDIR }}
-          cd ${{ env.CACHEDIR }}
-          sha256sum *.deb | sort > ../SHA256SUMS-current
+          # cd ${{ env.CACHEDIR }}
+          # sha256sum *.deb | sort > ../SHA256SUMS-current
       - name: Check cache
+        if: false
         run: |
           echo current-SHA256 ${{ hashFiles('SHA256SUMS-current') }}
           echo repocache-SHA256 ${{ hashFiles('SHA256SUMS-repocache') }}
@@ -86,8 +109,29 @@ jobs:
           then echo '/* SHA256SUMS is same, keep Repository cache */'
           else echo '/* SHA256SUMS not equal. update Repository cache */'
           fi
+      - name: FORCE Update repository cache (delete)
+        if: true
+        shell: bash {0}
+        run: |
+          if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c $KEY) ]; then
+            gh actions-cache delete $KEY -R $REPO --confirm
+          fi
+          # find ${{ env.CACHEDIR }} -type f -name 'SHA256SUMS*' -exec rm \{\} \+
+          # mv ./SHA256SUMS-current ${{ env.CACHEDIR }}/SHA256SUMS
+        env:
+          KEY: ${{ runner.os }}-debfiles
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: FORCE Update repository cache (save)
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.CACHEDIR }}
+          key: ${{ env.KEY }}
+        env:
+          KEY: ${{ runner.os }}-debfiles
+          REPO: ${{ github.repository }}
       - name: Update repository cache (delete)
-        if: ${{ hashFiles('SHA256SUMS-current') != hashFiles('SHA256SUMS-repocache') }}
+        if: false # ${{ hashFiles('SHA256SUMS-current') != hashFiles('SHA256SUMS-repocache') }}
         shell: bash {0}
         run: |
           if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c $KEY) ]; then
@@ -100,7 +144,7 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update repository cache (save)
-        if: ${{ hashFiles('SHA256SUMS-current') != hashFiles('SHA256SUMS-repocache') }}
+        if: false # ${{ hashFiles('SHA256SUMS-current') != hashFiles('SHA256SUMS-repocache') }}
         uses: actions/cache/save@v4
         with:
           path: ${{ env.CACHEDIR }}
@@ -110,6 +154,7 @@ jobs:
           REPO: ${{ github.repository }}
 
   windows:
+    if: false
     runs-on: ubuntu-latest
     permissions:
       actions: write
