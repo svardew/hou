@@ -46,7 +46,8 @@ jobs:
             | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-system_update
           mkdir -p ${{ env.CACHEDIR }}/system
           cd  ${{ env.CACHEDIR }}/system
-          apt-get upgrade -y --download-only
+          sudo apt-get upgrade -y --download-only
+          cp -vn /var/cache/apt/archives/*.deb ./
       - name: apt install print-uris (dependencies)
         shell: bash {0}
         run: |
@@ -72,7 +73,8 @@ jobs:
             | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-dependencies
           mkdir -p ${{ env.CACHEDIR }}/dependencies
           cd  ${{ env.CACHEDIR }}/dependencies
-          apt-get install -y --download-only "${PKGS[@]}"
+          sudo apt-get install -y --download-only "${PKGS[@]}"
+          cp -vn /var/cache/apt/archives/*.deb ./
       - name: apt install print-uris (gcc ppa)
         shell: bash {0}
         run: |
@@ -85,8 +87,9 @@ jobs:
             | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" >> apt_print_uris-gcc
           mkdir -p ${{ env.CACHEDIR }}/gcc
           cd  ${{ env.CACHEDIR }}/gcc
-          apt-get install -y --download-only gcc-${{ env.GCC }}
-          apt-get install -y --download-only gcc-${{ env.GCC }}:i386
+          sudo apt-get install -y --download-only gcc-${{ env.GCC }}
+          sudo apt-get install -y --download-only gcc-${{ env.GCC }}:i386
+          cp -vn /var/cache/apt/archives/*.deb ./
         env:
           GCC_VER: 13
       - name: apt install print-uris (llvm snapshot)
@@ -103,7 +106,8 @@ jobs:
             | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-llvm
           mkdir -p ${{ env.CACHEDIR }}/llvm
           cd  ${{ env.CACHEDIR }}/llvm
-          apt-get install -y --download-only clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
+          sudo apt-get install -y --download-only clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
+          cp -vn /var/cache/apt/archives/*.deb ./
         env:
           CLANG_VER: 18
       - name: check print-uris
