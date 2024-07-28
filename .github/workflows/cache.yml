@@ -44,6 +44,9 @@ jobs:
           touch apt_print_uris-system_update
           apt-get upgrade -y --print-uris \
             | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-system_update
+          mkdir -p ${{ env.CACHEDIR }}/system
+          cd  ${{ env.CACHEDIR }}/system
+          apt-get upgrade -y --download-only
       - name: apt install print-uris (dependencies)
         shell: bash {0}
         run: |
@@ -67,6 +70,9 @@ jobs:
           touch apt_print_uris-dependencies
           apt-get install -y --print-uris "${PKGS[@]}" \
             | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-dependencies
+          mkdir -p ${{ env.CACHEDIR }}/dependencies
+          cd  ${{ env.CACHEDIR }}/dependencies
+          apt-get install -y --download-only "${PKGS[@]}"
       - name: apt install print-uris (gcc ppa)
         shell: bash {0}
         run: |
@@ -77,6 +83,10 @@ jobs:
             | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-gcc
           apt-get install --print-uris -y gcc-${{ env.GCC_VER }}:i386 \
             | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" >> apt_print_uris-gcc
+          mkdir -p ${{ env.CACHEDIR }}/gcc
+          cd  ${{ env.CACHEDIR }}/gcc
+          apt-get install -y --download-only gcc-${{ env.GCC }}
+          apt-get install -y --download-only gcc-${{ env.GCC }}:i386
         env:
           GCC_VER: 13
       - name: apt install print-uris (llvm snapshot)
@@ -91,6 +101,9 @@ jobs:
           touch apt_print_uris-llvm
           apt-get install --print-uris -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }} \
             | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-llvm
+          mkdir -p ${{ env.CACHEDIR }}/llvm
+          cd  ${{ env.CACHEDIR }}/llvm
+          apt-get install -y --download-only clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
         env:
           CLANG_VER: 18
       - name: check print-uris
@@ -103,6 +116,7 @@ jobs:
           wc -l deb_uris
           echo 'TODO: wget -i uris? mirros+file scheme'
           cat deb_uris
+          du -sh ${{ env.CACHEDIR }}/*
 
   linux-debcache:
     if: false
