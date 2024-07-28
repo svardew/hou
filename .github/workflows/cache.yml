@@ -9,8 +9,99 @@ permissions:
   contents: read # to fetch code (actions/checkout)
 
 jobs:
-  linux-debcache:
+  linux-listdebs:
     if: true
+    runs-on: ubuntu-22.04 # fix version, not latest
+    permissions:
+      actions: write
+      contents: write
+    env:
+      CACHEDIR: debcache
+    steps:
+      - name: Checkout repository from github
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/vim
+          path: vim
+      - name: init
+        shell: bash {0}
+        run: |
+          gh extension install actions/gh-actions-cache
+          test -d ${{ env.CACHEDIR }} || mkdir ${{ env.CACHEDIR }}
+          sudo touch /etc/apt/apt.conf.d/99githubworkflows
+          echo 'Binary::apt::APT::Cache "/var/cache/apt";' | sudo tee -a /etc/apt/apt.conf.d/99githubworkflows
+          echo 'Binary::apt::APT::Cache::Archives "archives";' | sudo tee -a /etc/apt/apt.conf.d/99githubworkflows
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Uninstall snap
+        run: |
+          sudo bash ./vim/ci/remove_snap.sh
+      - name: apt install print-uris (system update)
+        shell: bash {0}
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          touch apt_print_uris-system_update
+          apt-get upgrade -y --print-uris | grep -E "^'http.*deb" > apt_print_uris-system_update
+      - name: apt install print-uris (dependencies)
+        shell: bash {0}
+        run: |
+          PKGS=( \
+            gettext \
+            desktop-file-utils \
+            libtool-bin \
+          )
+          PKGS+=( \
+            autoconf \
+            gdb \
+            lcov \
+            libcanberra-dev \
+            python2-dev \
+            python3-dev \
+            cscope \
+            libsodium-dev \
+            attr \
+            libattr1-dev
+          )
+          touch apt_print_uris-dependencies
+          apt-get install -y --print-uris "${PKGS[@]}" | grep -E "^'http.*deb" > apt_print_uris-dependencies
+      - name: apt install print-uris (gcc ppa)
+        shell: bash {0}
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo apt-get update
+          touch apt_print_uris-gcc
+          apt-get install --print-uris -y gcc-${{ env.GCC_VER }} | grep -E "^'http.*deb" > apt_print_uris-gcc
+          apt-get install --print-uris -y gcc-${{ env.GCC_VER }}:i386 | grep -E "^'http.*deb" >> apt_print_uris-gcc
+        env:
+          GCC_VER: 13
+      - name: apt install print-uris (llvm snapshot)
+        shell: bash {0}
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          . /etc/lsb-release
+          xuri="http://apt.llvm.org/${DISTRIB_CODENAME}/"
+          xsuite=lvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }}
+          sudo add-apt-repository -y "deb ${xuri} ${xsuite} main"
+          sudo apt-get update
+          touch apt_print_uris-llvm
+          apt-get install --print-uris -y \
+            clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }} | grep -E "^'http.*deb" > apt_print_uris-llvm
+        env:
+          CLANG_VER: 18
+      - name: apt install print-uris (llvm snapshot)
+        shell: bash {0}
+        run: |
+          echo 'each uris length'
+          wc -l apt_print_uris-*
+          cat apt_print_uris-* | sort | uniq | sed "s/deb'.*/deb/; s:^'::" > deb_uris
+          echo 'uniq deb uris length'
+          wc -l deb_uris
+          echo 'TODO: wget -i uris'
+          cat deb_uris
+
+  linux-debcache:
+    if: false
     runs-on: ubuntu-22.04 # fix version, not latest
     permissions:
       actions: write
