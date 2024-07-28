@@ -33,9 +33,10 @@ jobs:
           echo 'Binary::apt::APT::Cache::Archives "archives";' | sudo tee -a /etc/apt/apt.conf.d/99githubworkflows
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Uninstall snap
+      - name: Uninstall snap. Omit microsoft-prod
         run: |
           sudo bash ./vim/ci/remove_snap.sh
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
       - name: apt install print-uris (system update)
         shell: bash {0}
         run: |
@@ -48,6 +49,7 @@ jobs:
           cd  ${{ env.CACHEDIR }}/system
           sudo apt-get upgrade -y --download-only
           cp -vn /var/cache/apt/archives/*.deb ./
+          sudo apt-get clean
       - name: apt install print-uris (dependencies)
         shell: bash {0}
         run: |
@@ -75,6 +77,7 @@ jobs:
           cd  ${{ env.CACHEDIR }}/dependencies
           sudo apt-get install -y --download-only "${PKGS[@]}"
           cp -vn /var/cache/apt/archives/*.deb ./
+          sudo apt-get clean
       - name: apt install print-uris (gcc ppa)
         shell: bash {0}
         run: |
@@ -87,9 +90,10 @@ jobs:
             | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" >> apt_print_uris-gcc
           mkdir -p ${{ env.CACHEDIR }}/gcc
           cd  ${{ env.CACHEDIR }}/gcc
-          sudo apt-get install -y --download-only gcc-${{ env.GCC }}
-          sudo apt-get install -y --download-only gcc-${{ env.GCC }}:i386
+          sudo apt-get install -y --download-only gcc-${{ env.GCC_VER }}
+          sudo apt-get install -y --download-only gcc-${{ env.GCC_VER }}:i386
           cp -vn /var/cache/apt/archives/*.deb ./
+          sudo apt-get clean
         env:
           GCC_VER: 13
       - name: apt install print-uris (llvm snapshot)
@@ -108,6 +112,7 @@ jobs:
           cd  ${{ env.CACHEDIR }}/llvm
           sudo apt-get install -y --download-only clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
           cp -vn /var/cache/apt/archives/*.deb ./
+          sudo apt-get clean
         env:
           CLANG_VER: 18
       - name: check print-uris
@@ -120,6 +125,9 @@ jobs:
           wc -l deb_uris
           echo 'TODO: wget -i uris? mirros+file scheme'
           cat deb_uris
+          echo 'env.CACHEDIR info'
+          tree ${{ env.CACHEDIR }}
+          echo 'du -sh'
           du -sh ${{ env.CACHEDIR }}/*
 
   linux-debcache:
