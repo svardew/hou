@@ -64,7 +64,8 @@ jobs:
             libattr1-dev
           )
           touch apt_print_uris-dependencies
-          apt-get install -y --print-uris "${PKGS[@]}" | grep -E "^'http.*deb" > apt_print_uris-dependencies
+          # apt-get install -y --print-uris "${PKGS[@]}" | grep -E "^'http.*deb" > apt_print_uris-dependencies
+          apt-get install -y --print-uris "${PKGS[@]}"
       - name: apt install print-uris (gcc ppa)
         shell: bash {0}
         run: |
