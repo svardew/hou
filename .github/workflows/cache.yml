@@ -37,6 +37,17 @@ jobs:
         run: |
           sudo bash ./vim/ci/remove_snap.sh
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+      - name: Restore cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.CACHEDIR }}
+          key: ${{ runner.os }}-debfiles
+      - name: move repo cache
+        shell: bash {0}
+        run: |
+          mkdir -p ${{ env.CACHEDIR }}/_cache
+          cd ${{ env.CACHEDIR }}/_cache
+          mv ../*.deb ./
       - name: apt install print-uris (system update)
         shell: bash {0}
         run: |
