@@ -47,7 +47,7 @@ jobs:
         run: |
           mkdir -p ${{ env.CACHEDIR }}/_cache
           cd ${{ env.CACHEDIR }}/_cache
-          [[ -n "$(ls ../|grep -E '.deb$')" ]] && mv ../*.deb ./
+          [[ -n "$(ls .. | grep -E '.deb$')" ]] && mv ../*.deb ./
       - name: apt install print-uris (system update)
         shell: bash {0}
         run: |
