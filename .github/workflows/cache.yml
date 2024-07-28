@@ -42,7 +42,8 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get update
           touch apt_print_uris-system_update
-          apt-get upgrade -y --print-uris | grep -E "^'http.*deb" > apt_print_uris-system_update
+          apt-get upgrade -y --print-uris \
+            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-system_update
       - name: apt install print-uris (dependencies)
         shell: bash {0}
         run: |
@@ -64,16 +65,18 @@ jobs:
             libattr1-dev
           )
           touch apt_print_uris-dependencies
-          # apt-get install -y --print-uris "${PKGS[@]}" | grep -E "^'http.*deb" > apt_print_uris-dependencies
-          apt-get install -y --print-uris "${PKGS[@]}"
+          apt-get install -y --print-uris "${PKGS[@]}" \
+            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-dependencies
       - name: apt install print-uris (gcc ppa)
         shell: bash {0}
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
           sudo apt-get update
           touch apt_print_uris-gcc
-          apt-get install --print-uris -y gcc-${{ env.GCC_VER }} | grep -E "^'http.*deb" > apt_print_uris-gcc
-          apt-get install --print-uris -y gcc-${{ env.GCC_VER }}:i386 | grep -E "^'http.*deb" >> apt_print_uris-gcc
+          apt-get install --print-uris -y gcc-${{ env.GCC_VER }} \
+            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-gcc
+          apt-get install --print-uris -y gcc-${{ env.GCC_VER }}:i386 \
+            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" >> apt_print_uris-gcc
         env:
           GCC_VER: 13
       - name: apt install print-uris (llvm snapshot)
@@ -86,8 +89,8 @@ jobs:
           sudo add-apt-repository -y "deb ${xuri} ${xsuite} main"
           sudo apt-get update
           touch apt_print_uris-llvm
-          apt-get install --print-uris -y \
-            clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }} | grep -E "^'http.*deb" > apt_print_uris-llvm
+          apt-get install --print-uris -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }} \
+            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" >> apt_print_uris-llvm
         env:
           CLANG_VER: 18
       - name: apt install print-uris (llvm snapshot)
