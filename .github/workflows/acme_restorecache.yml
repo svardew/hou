@@ -45,6 +45,7 @@ jobs:
           hdr1: 'Accept: application/vnd.github+json'
           hdr2: 'X-GitHub-Api-Version: 2022-11-28'
           rest: '/repos/svardew/hou/actions/caches?per_page=100'
+          GH_TOKEN: ${{ github.token }}
       - name: Restore cache
         uses: actions/cache/restore@v4
         with:
