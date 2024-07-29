@@ -153,7 +153,7 @@ jobs:
         id: check_repo_cache_deb_system
         run: |
           if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c ${{ env.CACHEKEY }}) ]; then
-            echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUTS
+            echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
           fi
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/system
@@ -191,7 +191,7 @@ jobs:
         id: check_repo_cache_deb_gcc
         run: |
           if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c ${{ env.CACHEKEY }}) ]; then
-            echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUTS
+            echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
           fi
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/gcc
@@ -214,7 +214,7 @@ jobs:
       #     CACHEKEY:  ${{ steps.check_repo_cache_deb_gcc.outputs.CACHEKEY }}
       #     REPO: ${{ github.repository }}
       #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Save cache (dependencies)
+      - name: Save cache (gcc)
         if: steps.check_repo_cache_deb_gcc.outputs.KEY != ''
         uses: actions/cache/save@v4
         with:
@@ -230,7 +230,7 @@ jobs:
         id: check_repo_cache_deb_llvm
         run: |
           if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c ${{ env.CACHEKEY }}) ]; then
-            echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUTS
+            echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
           fi
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/llvm
