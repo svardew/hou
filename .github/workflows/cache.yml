@@ -152,8 +152,8 @@ jobs:
       - name: check repo cache (system update)
         id: check_repo_cache_deb_system
         run: |
-          if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c $CACHEKEY) ]; then
-            echo CACHEKEY=${{ env.CACHEKEY }} >> $GITHUB_OUTPUTS
+          if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c ${{ env.CACHEKEY }}) ]; then
+            echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUTS
           fi
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/system
@@ -161,11 +161,11 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: delete repo cache (system update)
-        if: steps.check_repo_cache_deb_system.outputs.CACHEKEY != ''
-        run: gh actions-cache delete $CACHEKEY -R $REPO --confirm
+        if: steps.check_repo_cache_deb_system.outputs.KEY != ''
+        run: gh actions-cache delete ${{ env.CACHEKEY }} -R $REPO --confirm
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/system
-          CACHEKEY:  ${{ steps.check_repo_cache_deb_system.outputs.CACHEKEY }}
+          CACHEKEY:  ${{ steps.check_repo_cache_deb_system.outputs.KEY }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # - name: save repo cache (system update)
@@ -183,15 +183,15 @@ jobs:
           path: ${{ env.CACHEPATH }}/*.deb
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/system
-          CACHEKEY:  ${{ steps.check_repo_cache_deb_system.outputs.CACHEKEY }}
+          CACHEKEY:  ${{ steps.check_repo_cache_deb_system.outputs.KEY }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ########
       - name: check repo cache (gcc ppa)
         id: check_repo_cache_deb_gcc
         run: |
-          if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c $CACHEKEY) ]; then
-            echo "CACHEKEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUTS
+          if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c ${{ env.CACHEKEY }}) ]; then
+            echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUTS
           fi
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/gcc
@@ -199,11 +199,11 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: delete repo cache (gcc ppa)
-        if: steps.check_repo_cache_deb_gcc.outputs.CACHEKEY != ''
+        if: steps.check_repo_cache_deb_gcc.outputs.KEY != ''
         run: gh actions-cache delete $CACHEKEY -R $REPO --confirm
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/gcc
-          CACHEKEY:  ${{ steps.check_repo_cache_deb_gcc.outputs.CACHEKEY }}
+          CACHEKEY:  ${{ steps.check_repo_cache_deb_gcc.outputs.KEY }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # - name: save repo cache (gcc ppa)
@@ -215,22 +215,22 @@ jobs:
       #     REPO: ${{ github.repository }}
       #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Save cache (dependencies)
-        if: steps.check_repo_cache_deb_gcc.outputs.CACHEKEY != ''
+        if: steps.check_repo_cache_deb_gcc.outputs.KEY != ''
         uses: actions/cache/save@v4
         with:
           key: ${{ env.CACHEKEY }}
           path: ${{ env.CACHEPATH }}/*.deb
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/gcc
-          CACHEKEY:  ${{ steps.check_repo_cache_deb_gcc.outputs.CACHEKEY }}
+          CACHEKEY:  ${{ steps.check_repo_cache_deb_gcc.outputs.KEY }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ########
       - name: check repo cache (llvm)
         id: check_repo_cache_deb_llvm
         run: |
-          if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c $CACHEKEY) ]; then
-            echo "CACHEKEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUTS
+          if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c ${{ env.CACHEKEY }}) ]; then
+            echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUTS
           fi
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/llvm
@@ -238,11 +238,11 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: delete repo cache (llvm)
-        if: steps.check_repo_cache_deb_llvm.outputs.CACHEKEY != ''
+        if: steps.check_repo_cache_deb_llvm.outputs.KEY != ''
         run: gh actions-cache delete $CACHEKEY -R $REPO --confirm
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/llvm
-          CACHEKEY:  ${{ steps.check_repo_cache_deb_llvm.outputs.CACHEKEY }}
+          CACHEKEY:  ${{ steps.check_repo_cache_deb_llvm.outputs.KEY }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # - name: save repo cache (llvm)
@@ -254,14 +254,14 @@ jobs:
       #     REPO: ${{ github.repository }}
       #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Save cache (llvm)
-        if: steps.check_repo_cache_deb_llvm.outputs.CACHEKEY != ''
+        if: steps.check_repo_cache_deb_llvm.outputs.KEY != ''
         uses: actions/cache/save@v4
         with:
           key: ${{ env.CACHEKEY }}
           path: ${{ env.CACHEPATH }}/*.deb
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/llvm
-          CACHEKEY:  ${{ steps.check_repo_cache_deb_llvm.outputs.CACHEKEY }}
+          CACHEKEY:  ${{ steps.check_repo_cache_deb_llvm.outputs.KEY }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: move deb files
