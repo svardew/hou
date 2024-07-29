@@ -38,30 +38,33 @@ jobs:
           sudo bash ./vim/ci/remove_snap.sh
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
       - name: Restore cache
+        if: false
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.CACHEDIR }}
           key: ${{ runner.os }}-debfiles
       - name: move repo cache
+        if: false
         shell: bash {0}
         run: |
           mkdir -p ${{ env.CACHEDIR }}/_cache
           cd ${{ env.CACHEDIR }}/_cache
           find .. -maxdepth 1 -type f -name '*.deb' -exec mv -t ./ \{\} \+
-      - name: apt install print-uris (system update)
+      - name: apt (system update)
         shell: bash {0}
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
-          touch apt_print_uris-system_update
+          touch uris-system_update
           apt-get upgrade -y --print-uris \
-            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-system_update
+            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > uris-system_update
           mkdir -p ${{ env.CACHEDIR }}/system
           cd  ${{ env.CACHEDIR }}/system
           sudo apt-get upgrade -y --download-only
-          cp -vn /var/cache/apt/archives/*.deb ./
+          cp -n /var/cache/apt/archives/*.deb ./
+          du -sh $PWD
           sudo apt-get clean
-      - name: apt install print-uris (dependencies)
+      - name: apt (dependencies)
         shell: bash {0}
         run: |
           PKGS=( \
@@ -81,33 +84,35 @@ jobs:
             attr \
             libattr1-dev
           )
-          touch apt_print_uris-dependencies
+          touch uris-dependencies
           apt-get install -y --print-uris "${PKGS[@]}" \
-            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-dependencies
+            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > uris-dependencies
           mkdir -p ${{ env.CACHEDIR }}/dependencies
           cd  ${{ env.CACHEDIR }}/dependencies
           sudo apt-get install -y --download-only "${PKGS[@]}"
-          cp -vn /var/cache/apt/archives/*.deb ./
+          cp -n /var/cache/apt/archives/*.deb ./
+          du -sh $PWD
           sudo apt-get clean
-      - name: apt install print-uris (gcc ppa)
+      - name: apt (gcc ppa)
         shell: bash {0}
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
           sudo apt-get update
-          touch apt_print_uris-gcc
+          touch uris-gcc
           apt-get install --print-uris -y gcc-${{ env.GCC_VER }} \
-            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-gcc
+            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > uris-gcc
           apt-get install --print-uris -y gcc-${{ env.GCC_VER }}:i386 \
-            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" >> apt_print_uris-gcc
+            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" >> uris-gcc
           mkdir -p ${{ env.CACHEDIR }}/gcc
           cd  ${{ env.CACHEDIR }}/gcc
           sudo apt-get install -y --download-only gcc-${{ env.GCC_VER }}
           sudo apt-get install -y --download-only gcc-${{ env.GCC_VER }}:i386
-          cp -vn /var/cache/apt/archives/*.deb ./
+          cp -n /var/cache/apt/archives/*.deb ./
+          du -sh $PWD
           sudo apt-get clean
         env:
           GCC_VER: 13
-      - name: apt install print-uris (llvm snapshot)
+      - name: apt (llvm snapshot)
         shell: bash {0}
         run: |
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
@@ -116,13 +121,14 @@ jobs:
           llvmsuite=llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }}
           sudo add-apt-repository -y "deb ${llvmuri} ${llvmsuite} main"
           sudo apt-get update
-          touch apt_print_uris-llvm
+          touch uris-llvm
           apt-get install --print-uris -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }} \
-            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > apt_print_uris-llvm
+            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > uris-llvm
           mkdir -p ${{ env.CACHEDIR }}/llvm
           cd  ${{ env.CACHEDIR }}/llvm
           sudo apt-get install -y --download-only clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
-          cp -vn /var/cache/apt/archives/*.deb ./
+          cp -n /var/cache/apt/archives/*.deb ./
+          du -sh $PWD
           sudo apt-get clean
         env:
           CLANG_VER: 18
@@ -130,19 +136,136 @@ jobs:
         shell: bash {0}
         run: |
           echo '// each uris length'
-          wc -l apt_print_uris-*
-          cat apt_print_uris-* | sort | uniq | sed "s/deb'.*/deb/; s:^'::" > deb_uris
+          wc -l uris-*
+          cat uris-* | sort | uniq | sed "s/deb'.*/deb/; s:^'::" > deb_uris
           echo '// uniq deb uris length'
           wc -l deb_uris
           echo '// TODO: wget -i uris? mirros+file scheme'
           head -n3 deb_uris
-          echo '...'
+          echo ' (...)'
           tail -n3 deb_uris
           echo '// env.CACHEDIR info'
           tree ${{ env.CACHEDIR }}
           echo '// du -sh'
           du -sh ${{ env.CACHEDIR }}/*/
+      ########
+      - name: check repo cache (system update)
+        id: check_repo_cache_deb_system
+        run: |
+          if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c $CACHEKEY) ]; then
+            echo CACHEKEY=${{ env.CACHEKEY }} >> $GITHUB_OUTPUTS
+          fi
+        env:
+          CACHEPATH: ${{ env.CACHEDIR }}/system
+          CACHEKEY: linux-deb-system
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: delete repo cache (system update)
+        if: steps.check_repo_cache_deb_system.outputs.CACHEKEY != ''
+        run: gh actions-cache delete $CACHEKEY -R $REPO --confirm
+        env:
+          CACHEPATH: ${{ env.CACHEDIR }}/system
+          CACHEKEY:  ${{ steps.check_repo_cache_deb_system.outputs.CACHEKEY }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: save repo cache (system update)
+      #   if: steps.check_repo_cache_deb_system.outputs.CACHEKEY != ''
+      #   run: gh actions-cache delete $CACHEKEY -R $REPO --confirm
+      #   env:
+      #     CACHEPATH: ${{ env.CACHEDIR }}/system
+      #     CACHEKEY:  ${{ steps.check_repo_cache_deb_system.outputs.CACHEKEY }}
+      #     REPO: ${{ github.repository }}
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Save cache (system)
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ env.CACHEKEY }}
+          path: ${{ env.CACHEPATH }}/*.deb
+        env:
+          CACHEPATH: ${{ env.CACHEDIR }}/system
+          CACHEKEY:  ${{ steps.check_repo_cache_deb_system.outputs.CACHEKEY }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ########
+      - name: check repo cache (gcc ppa)
+        id: check_repo_cache_deb_gcc
+        run: |
+          if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c $CACHEKEY) ]; then
+            echo "CACHEKEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUTS
+          fi
+        env:
+          CACHEPATH: ${{ env.CACHEDIR }}/gcc
+          CACHEKEY: linux-deb-gcc
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: delete repo cache (gcc ppa)
+        if: steps.check_repo_cache_deb_gcc.outputs.CACHEKEY != ''
+        run: gh actions-cache delete $CACHEKEY -R $REPO --confirm
+        env:
+          CACHEPATH: ${{ env.CACHEDIR }}/gcc
+          CACHEKEY:  ${{ steps.check_repo_cache_deb_gcc.outputs.CACHEKEY }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: save repo cache (gcc ppa)
+      #   if: steps.check_repo_cache_deb_gcc.outputs.CACHEKEY != ''
+      #   run: gh actions-cache delete $CACHEKEY -R $REPO --confirm
+      #   env:
+      #     CACHEPATH: ${{ env.CACHEDIR }}/gcc
+      #     CACHEKEY:  ${{ steps.check_repo_cache_deb_gcc.outputs.CACHEKEY }}
+      #     REPO: ${{ github.repository }}
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Save cache (dependencies)
+        if: steps.check_repo_cache_deb_gcc.outputs.CACHEKEY != ''
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ env.CACHEKEY }}
+          path: ${{ env.CACHEPATH }}/*.deb
+        env:
+          CACHEPATH: ${{ env.CACHEDIR }}/gcc
+          CACHEKEY:  ${{ steps.check_repo_cache_deb_gcc.outputs.CACHEKEY }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ########
+      - name: check repo cache (llvm)
+        id: check_repo_cache_deb_llvm
+        run: |
+          if [ $(gh actions-cache list -R $REPO |cut -f1 |grep -c $CACHEKEY) ]; then
+            echo "CACHEKEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUTS
+          fi
+        env:
+          CACHEPATH: ${{ env.CACHEDIR }}/llvm
+          CACHEKEY: linux-deb-llvm
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: delete repo cache (llvm)
+        if: steps.check_repo_cache_deb_llvm.outputs.CACHEKEY != ''
+        run: gh actions-cache delete $CACHEKEY -R $REPO --confirm
+        env:
+          CACHEPATH: ${{ env.CACHEDIR }}/llvm
+          CACHEKEY:  ${{ steps.check_repo_cache_deb_llvm.outputs.CACHEKEY }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: save repo cache (llvm)
+      #   if: steps.check_repo_cache_deb_system.outputs.CACHEKEY != ''
+      #   run: gh actions-cache delete $CACHEKEY -R $REPO --confirm
+      #   env:
+      #     CACHEPATH: ${{ env.CACHEDIR }}/llvm
+      #     CACHEKEY:  ${{ steps.check_repo_cache_deb_llvm.outputs.CACHEKEY }}
+      #     REPO: ${{ github.repository }}
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Save cache (llvm)
+        if: steps.check_repo_cache_deb_llvm.outputs.CACHEKEY != ''
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ env.CACHEKEY }}
+          path: ${{ env.CACHEPATH }}/*.deb
+        env:
+          CACHEPATH: ${{ env.CACHEDIR }}/llvm
+          CACHEKEY:  ${{ steps.check_repo_cache_deb_llvm.outputs.CACHEKEY }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: move deb files
+        if: false
         shell: bash {0}
         run: |
           cd ${{ env.CACHEDIR }}
@@ -151,10 +274,27 @@ jobs:
           done
           find _cache -type f -name '*.deb' -exec mv -t ./ \{\} \+
       - name: Save cache
+        if: false
         uses: actions/cache/save@v4
         with:
           path: ${{ env.CACHEDIR }}/*.deb
           key: ${{ runner.os }}-debfiles
+      - name: report
+        shell: bash {0}
+        run: |
+          echo '/** du CACHEDIR */'
+          du -sh ${{ env.CACHEDIR }}
+          du -sh ${{ env.CACHEDIR }}/*
+          echo '/** repository cache */'
+          ghapi_rest="/repos/${{ github.repository }}/actions/caches?per_page=100"
+          gh api -H ${{ env.ghapihdr1 }} -H {{ env.ghapihdr2 }} $ghapi_rest | jq .
+          echo '---'
+          gh actions-cache list -R $REPO | cut -f1
+        env:
+          ghapihdr1: 'Accept: application/vnd.github+json'
+          ghapihdr2: 'X-GitHub-Api-Version: 2022-11-28'
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   linux-debcache:
     if: false
