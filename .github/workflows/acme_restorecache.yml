@@ -1,0 +1,52 @@
+name: FIXME actions/cache/restore
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  wip:
+    runs-on: ubuntu-22.04 # fix version, not latest
+    permissions:
+      actions: write
+      contents: write
+    env:
+      CACHEDIR: debcache
+    steps:
+      - name: Checkout repository from github
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/vim
+          path: vim
+      - name: init
+        shell: bash {0}
+        run: |
+          gh extension install actions/gh-actions-cache
+          test -d ${{ env.CACHEDIR }} || mkdir ${{ env.CACHEDIR }}
+          sudo touch /etc/apt/apt.conf.d/99githubworkflows
+          echo 'Binary::apt::APT::Cache "/var/cache/apt";' | sudo tee -a /etc/apt/apt.conf.d/99githubworkflows
+          echo 'Binary::apt::APT::Cache::Archives "archives";' | sudo tee -a /etc/apt/apt.conf.d/99githubworkflows
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Uninstall snap. Omit microsoft-prod
+        run: |
+          sudo bash ./vim/ci/remove_snap.sh
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+      - name: WIP cwd
+        # docs.github.com/ja/rest/actions/cache?apiVersion=2022-11-28
+        run: |
+          ls -lah .
+          echo '/** contexts */'
+          echo ${{ env.CACHEDIR }}
+          echo ${{ runner.os }}-debfiles
+          gh api -H "${{ env.hdr1 }}" -H "${{ env.hdr2 }}" ${{ env.rest }} | jq '.'
+        env:
+          hdr1: 'Accept: application/vnd.github+json'
+          hdr2: 'X-GitHub-Api-Version: 2022-11-28'
+          rest: '/repos/svardew/hou/actions/caches?per_page=100'
+      - name: Restore cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.CACHEDIR }}
+          key: ${{ runner.os }}-debfiles
