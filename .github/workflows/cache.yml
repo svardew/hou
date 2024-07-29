@@ -152,8 +152,9 @@ jobs:
       - name: check repo cache (system update)
         id: check_repo_cache_deb_system
         run: |
-          if [ $(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep -c ${{ env.CACHEKEY }}) ]; then
-            echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
+          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ]
+          then echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
+          else echo 'no cache found:' ${{ env.CACHEKEY }}
           fi
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/system
@@ -190,8 +191,9 @@ jobs:
       - name: check repo cache (dependencies)
         id: check_repo_cache_deb_dependencies
         run: |
-          if [ $(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep -c ${{ env.CACHEKEY }}) ]; then
-            echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
+          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ]
+          then echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
+          else echo 'no cache found:' ${{ env.CACHEKEY }}
           fi
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/dependencies
@@ -228,8 +230,9 @@ jobs:
       - name: check repo cache (gcc ppa)
         id: check_repo_cache_deb_gcc
         run: |
-          if [ $(gh actions-cache list -R $REPO |cut -f2 |grep -c ${{ env.CACHEKEY }}) ]; then
-            echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
+          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ]
+          then echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
+          else echo 'no cache found:' ${{ env.CACHEKEY }}
           fi
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/gcc
@@ -267,8 +270,9 @@ jobs:
       - name: check repo cache (llvm)
         id: check_repo_cache_deb_llvm
         run: |
-          if [ $(gh actions-cache list -R $REPO |cut -f2 |grep -c ${{ env.CACHEKEY }}) ]; then
-            echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
+          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ]
+          then echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
+          else echo 'no cache found:' ${{ env.CACHEKEY }}
           fi
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/llvm
