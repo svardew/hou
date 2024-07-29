@@ -47,7 +47,7 @@ jobs:
         run: |
           mkdir -p ${{ env.CACHEDIR }}/_cache
           cd ${{ env.CACHEDIR }}/_cache
-          find .. -maxdepth 1 -type f -name '*.deb' -exec mv '{}' ./ \+
+          find .. -maxdepth 1 -type f -name '*.deb' -exec mv \{\} ./  \+
       - name: apt install print-uris (system update)
         shell: bash {0}
         run: |
