@@ -152,7 +152,7 @@ jobs:
       - name: check repo cache (system update)
         id: check_repo_cache_deb_system
         run: |
-          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ]
+          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ];then
             echo "DELETECACHE=yes" >> $GITHUB_OUTPUT
             echo "next step, delete cache: " ${{ env.CACHEKEY }}
           fi
@@ -192,7 +192,7 @@ jobs:
       - name: check repo cache (dependencies)
         id: check_repo_cache_deb_dependencies
         run: |
-          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ]
+          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ];then
             echo "DELETECACHE=yes" >> $GITHUB_OUTPUT
             echo "next step, delete cache: " ${{ env.CACHEKEY }}
           fi
@@ -232,7 +232,7 @@ jobs:
       - name: check repo cache (gcc ppa)
         id: check_repo_cache_deb_gcc
         run: |
-          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ]
+          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ];then
             echo "DELETECACHE=yes" >> $GITHUB_OUTPUT
             echo "next step, delete cache: " ${{ env.CACHEKEY }}
           fi
@@ -273,7 +273,7 @@ jobs:
       - name: check repo cache (llvm)
         id: check_repo_cache_deb_llvm
         run: |
-          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ]
+          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ];then
           then echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
           else echo 'no cache found:' ${{ env.CACHEKEY }}
           fi
