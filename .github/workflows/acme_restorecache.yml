@@ -20,6 +20,11 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/vim
           path: vim
+      - name: Checkout repository from github
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/hou
+          path: _svardew_hou
       - name: init
         shell: bash {0}
         run: |
