@@ -146,10 +146,15 @@ jobs:
         shell: bash {0}
         run: |
           cd ${{ env.CACHEDIR }}
-          for d in [a-z]*/
+          for d in system dependencies gcc llvm
           do cd $d; mv -vn ./*.deb ../_cache/; cd ..; rm -rf $d
           done
-          find _cache 1 -type f -name '*.deb' -exec mv -t ./ \{\} \+
+          find _cache -type f -name '*.deb' -exec mv -t ./ \{\} \+
+      - name: Save cache
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.CACHEDIR }}/*.deb
+          key: ${{ runner.os }}-debfiles
 
   linux-debcache:
     if: false
@@ -295,11 +300,6 @@ jobs:
         env:
           KEY: ${{ runner.os }}-debfiles
           REPO: ${{ github.repository }}
-      - name: Save cache
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ env.CACHEDIR }}/*.deb
-          key: ${{ runner.os }}-debfiles
 
   windows:
     if: false
