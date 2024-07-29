@@ -274,9 +274,10 @@ jobs:
         id: check_repo_cache_deb_llvm
         run: |
           if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ];then
-          then echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
-          else echo 'no cache found:' ${{ env.CACHEKEY }}
+            echo "DELETECACHE=yes" >> $GITHUB_OUTPUT
+            echo "next step, delete cache: " ${{ env.CACHEKEY }}
           fi
+          echo "KEY=${{ env.CACHEKEY }}" >> $GITHUB_OUTPUT
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/llvm
           CACHEKEY: linux-deb-llvm
