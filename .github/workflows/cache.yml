@@ -47,7 +47,7 @@ jobs:
         run: |
           mkdir -p ${{ env.CACHEDIR }}/_cache
           cd ${{ env.CACHEDIR }}/_cache
-          [[ -n "$(ls .. | grep -E '.deb$')" ]] && mv ../*.deb ./
+          find .. -maxdepth 1 -type f -name '*.deb' -exec mv '{}' ./ \+
       - name: apt install print-uris (system update)
         shell: bash {0}
         run: |
@@ -112,9 +112,9 @@ jobs:
         run: |
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
-          xuri="http://apt.llvm.org/${DISTRIB_CODENAME}/"
-          xsuite=llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }}
-          sudo add-apt-repository -y "deb ${xuri} ${xsuite} main"
+          llvmuri="http://apt.llvm.org/${DISTRIB_CODENAME}/"
+          llvmsuite=llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }}
+          sudo add-apt-repository -y "deb ${llvmuri} ${llvmsuite} main"
           sudo apt-get update
           touch apt_print_uris-llvm
           apt-get install --print-uris -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }} \
@@ -129,17 +129,19 @@ jobs:
       - name: check print-uris
         shell: bash {0}
         run: |
-          echo 'each uris length'
+          echo '// each uris length'
           wc -l apt_print_uris-*
           cat apt_print_uris-* | sort | uniq | sed "s/deb'.*/deb/; s:^'::" > deb_uris
-          echo 'uniq deb uris length'
+          echo '// uniq deb uris length'
           wc -l deb_uris
-          echo 'TODO: wget -i uris? mirros+file scheme'
-          cat deb_uris
-          echo 'env.CACHEDIR info'
+          echo '// TODO: wget -i uris? mirros+file scheme'
+          head -n3 deb_uris
+          echo '...'
+          tail -n3 deb_uris
+          echo '// env.CACHEDIR info'
           tree ${{ env.CACHEDIR }}
-          echo 'du -sh'
-          du -sh ${{ env.CACHEDIR }}/*
+          echo '// du -sh'
+          du -sh ${{ env.CACHEDIR }}/*/
 
   linux-debcache:
     if: false
