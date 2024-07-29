@@ -41,6 +41,7 @@ jobs:
           sudo bash ./vim/ci/remove_snap.sh
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
       - name: WIP cwd
+        if: false
         # docs.github.com/ja/rest/actions/cache?apiVersion=2022-11-28
         run: |
           ls -lah .
@@ -54,9 +55,23 @@ jobs:
           rest: '/repos/svardew/hou/actions/caches?per_page=100'
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Restore cache
+        if: false
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.CACHEDIR }}
           key: ${{ runner.os }}-debfiles
+      - name: check gh-actions-cache output format
+        run: |
+          echo '/** show cache list filter by key=linux-deb-system */'
+          gh actions-cache list -R $REPO --key ${{ env.KEY1 }}
+          echo '/** show cache list filter by key=NotExistKey */'
+          gh actions-cache list -R $REPO --key ${{ env.KEY2 }}
+          echo '/** show return val from filter by key=NotExistKey */'
+          echo '---'"$(gh actions-cache list -R $REPO --key ${{ env.KEY2 }})"'---'
+          echo '---'"__gh actions-cache list -R _REPO --key ___ env.KEY2 ___"'---'
+        env:
+          REPO: ${{ github.repository }}
+          KEY1: linux-deb-system
+          KEY2: not-exist-keystring
       - name: noop
         run: whoami
