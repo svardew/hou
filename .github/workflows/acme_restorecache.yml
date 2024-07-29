@@ -16,6 +16,7 @@ jobs:
     steps:
       - name: Checkout repository from github
         uses: actions/checkout@v4
+        if: false
         with:
           repository: ${{ github.repository_owner }}/vim
           path: vim
@@ -30,6 +31,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Uninstall snap. Omit microsoft-prod
+        if: false
         run: |
           sudo bash ./vim/ci/remove_snap.sh
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
@@ -51,3 +53,5 @@ jobs:
         with:
           path: ${{ env.CACHEDIR }}
           key: ${{ runner.os }}-debfiles
+      - name: noop
+        run: whoami
