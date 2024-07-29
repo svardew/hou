@@ -161,7 +161,7 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: delete repo cache (system update)
-        if: steps.check_repo_cache_deb_system.outputs.KEY != ''
+        if: ${{ steps.check_repo_cache_deb_system.outputs.KEY != '' }}
         run: gh actions-cache delete ${{ env.CACHEKEY }} -R $REPO --confirm
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/system
@@ -199,7 +199,7 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: delete repo cache (gcc ppa)
-        if: steps.check_repo_cache_deb_gcc.outputs.KEY != ''
+        if: ${{ steps.check_repo_cache_deb_gcc.outputs.KEY != '' }}
         run: gh actions-cache delete $CACHEKEY -R $REPO --confirm
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/gcc
@@ -215,7 +215,7 @@ jobs:
       #     REPO: ${{ github.repository }}
       #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Save cache (gcc)
-        if: steps.check_repo_cache_deb_gcc.outputs.KEY != ''
+        if: ${{ steps.check_repo_cache_deb_gcc.outputs.KEY != '' }}
         uses: actions/cache/save@v4
         with:
           key: ${{ env.CACHEKEY }}
@@ -238,7 +238,7 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: delete repo cache (llvm)
-        if: steps.check_repo_cache_deb_llvm.outputs.KEY != ''
+        if: ${{ steps.check_repo_cache_deb_llvm.outputs.KEY != '' }}
         run: gh actions-cache delete $CACHEKEY -R $REPO --confirm
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/llvm
@@ -254,7 +254,7 @@ jobs:
       #     REPO: ${{ github.repository }}
       #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Save cache (llvm)
-        if: steps.check_repo_cache_deb_llvm.outputs.KEY != ''
+        if: ${{ steps.check_repo_cache_deb_llvm.outputs.KEY != '' }}
         uses: actions/cache/save@v4
         with:
           key: ${{ env.CACHEKEY }}
