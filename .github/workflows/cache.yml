@@ -152,7 +152,7 @@ jobs:
       - name: check repo cache (system update)
         id: check_repo_cache_deb_system
         run: |
-          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ];then
+          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} --key ${{ env.CACHEKEY }})" ];then
             echo "DELETECACHE=yes" >> $GITHUB_OUTPUT
             echo "next step, delete cache: " ${{ env.CACHEKEY }}
           fi
@@ -192,7 +192,7 @@ jobs:
       - name: check repo cache (dependencies)
         id: check_repo_cache_deb_dependencies
         run: |
-          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ];then
+          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} --key ${{ env.CACHEKEY }})" ];then
             echo "DELETECACHE=yes" >> $GITHUB_OUTPUT
             echo "next step, delete cache: " ${{ env.CACHEKEY }}
           fi
@@ -232,7 +232,7 @@ jobs:
       - name: check repo cache (gcc ppa)
         id: check_repo_cache_deb_gcc
         run: |
-          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ];then
+          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} --key ${{ env.CACHEKEY }})" ];then
             echo "DELETECACHE=yes" >> $GITHUB_OUTPUT
             echo "next step, delete cache: " ${{ env.CACHEKEY }}
           fi
@@ -273,7 +273,7 @@ jobs:
       - name: check repo cache (llvm)
         id: check_repo_cache_deb_llvm
         run: |
-          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} |cut -f2 |grep ${{ env.CACHEKEY }})" ];then
+          if [ -n "$(gh actions-cache list -R ${{ env.REPO }} --key ${{ env.CACHEKEY }})" ];then
             echo "DELETECACHE=yes" >> $GITHUB_OUTPUT
             echo "next step, delete cache: " ${{ env.CACHEKEY }}
           fi
@@ -333,7 +333,7 @@ jobs:
           du -sh ${{ env.CACHEDIR }}/*
           echo '/** repository cache */'
           ghapi_rest="/repos/${{ github.repository }}/actions/caches?per_page=100"
-          gh api -H ${{ env.ghapihdr1 }} -H {{ env.ghapihdr2 }} $ghapi_rest | jq .
+          gh api -H "${{ env.ghapihdr1 }}" -H "{{ env.ghapihdr2 }}" $ghapi_rest | jq .
           echo '---'
           gh actions-cache list -R $REPO | cut -f1
         env:
