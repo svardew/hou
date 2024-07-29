@@ -55,9 +55,17 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
-          touch uris-system_update
-          apt-get upgrade -y --print-uris \
-            | grep -E "^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$" > uris-system_update
+          function prepare_checksum {
+            name=$1
+            egreppat="^'.*deb'\s.*\sMD5Sum:[a-f0-9]+$"
+            sedcmd="s/^.*deb\'\s\(.*.deb\)\'\s*\([0-9]*\)\s*MD5Sum:\([a-fA-F0-9]*\)$/\3  \1/"
+            touch uris-${name}
+            touch MD5SUMS-${name}
+            apt-get upgrade -y --print-uris | grep -E $egreppat > uris-${name}
+            sed $sedcmd < uris-${name} > MD5SUMS-${name}
+          }
+          prepare_checksum system_update
+          #
           mkdir -p ${{ env.CACHEDIR }}/system
           cd  ${{ env.CACHEDIR }}/system
           sudo apt-get upgrade -y --download-only
@@ -243,7 +251,7 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: delete repo cache (gcc ppa)
-        if: ${{ steps.check_repo_cache_deb_gcc.DELETECACHE == 'yes' }}
+        if: ${{ steps.check_repo_cache_deb_gcc.outputs.DELETECACHE == 'yes' }}
         run: gh actions-cache delete $CACHEKEY -R $REPO --confirm
         env:
           CACHEPATH: ${{ env.CACHEDIR }}/gcc
