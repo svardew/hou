@@ -1,0 +1,98 @@
+name: GitHub CI macos VM check
+
+on:
+  workflow_dispatch:
+
+# Cancels all previous workflow runs for pull requests that have not completed.
+concurrency:
+  # The concurrency group contains the workflow name and the branch name for
+  # pull requests or the commit hash for any other events.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  macos:
+    # if: false
+    runs-on: ${{ matrix.runner }}
+
+    env:
+      CC: clang
+      TEST: test
+      SRCDIR: ./src
+      LEAK_CFLAGS: -DEXITFREE
+      TERM: xterm
+
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-12, macos-14, macos-latest]
+
+    steps:
+      - name: description
+        run: |
+          echo 'qiita @jnchito, [macos + ruby] devel env check memo (2024-11-08)'
+
+      - name: nr-1 check Machine CPU, nr-2 check fresh dev-tool
+        run: |
+          echo 'check machine cpu via AppleMenu -> About this Mac'
+          echo 'expect [Chip Apple M{1,2,3,4}]'
+          echo 'check if this machine is copied setting from old machine'
+          echo '// ?(transient-assistant)'
+          echo 'devel machine with fresh initialised and new dev-tool install is better'
+          echo 'this is for local baremetal machine, omit this.'
+
+      - name: nr-3 bash or zsh
+        run: |
+          echo 'default shell is zsh for 5 years.'
+          echo $SHELL
+
+      - name: nr-4 terminal cpu mode (Rosetta?)
+        run: |
+          echo 'expect arm cpu (arm64), not intel (x86_64)'
+          uname -a
+
+      - name: nr-5 homebrew
+        run: |
+          echo 'expect /opt/homebrew/bin/brew.'
+          echo '/usr/local/.. is intel ver'
+          echo 'multi path found for brew is not better'
+          which -a brew
+
+      - name: nr-6 brew doctor
+        run: |
+          echo 'expect [Your system is ready to brew].'
+          echo 'Warning is not better'
+          brew doctor
+
+      - name: nr-7 rbenv-doctor
+        run: |
+          echo 'check rbenv-doctor if managing ruby via rbenv'
+          echo '// curl -fsSL <URL>/bin/rbenv-doctor | bash'
+          echo 'GH-CI use rubies via ruby/setup-ruby, omit this job.'
+
+      - name: nr-8 use VS Code arm
+        run: |
+          echo 'check [uname -a] in terminal on VS Code.
+          echo 'expect arm64, not x86_64'
+          echo 'GH-CI not use VS Code, omit this job.'
+
+      - name: nr-9 zsh settings
+        run: |
+          echo 'review .zshrc and .zshprofile'
+          echo 'this zsh settings is for local dev machine performance'
+          echo 'GH-CI run many command on bash, omit this job.'
+          echo '// .zshrc'
+          cat ~/.zshrc
+          echo '// .zprofile'
+          cat ~/.zprofile
+
+      - name: nr-A check system ruby
+        run: |
+          which ruby
+          ruby -v
+          ruby -e 'puts RUBY_DESCRIPTION'
+
+
