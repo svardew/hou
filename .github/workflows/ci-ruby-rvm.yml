@@ -86,11 +86,9 @@ jobs:
               lcov \
               libcanberra-dev \
               libperl-dev \
-              python2-dev \
               python3-dev \
               liblua${LUA_VER}-dev \
               lua${LUA_VER} \
-              ruby-dev \
               tcl-dev \
               cscope \
               libsodium-dev \
