@@ -112,6 +112,13 @@ jobs:
           wc -l /etc/profile.d/rvm.sh
           rvm version
 
+      - name: public key of rvm
+        env:
+          PUBKEY1: '409B6B1796C275462A1703113804BB82D39DC0E3'
+          PUBKEY2: '7D2BAF1CF37B13E2069D6956105BD0E739499BDB'
+        run: |
+          gpg2 --keyserver hkp://pool.sks-keyservers.net --recv-keys ${{ env.PUBKEY1 }} ${{ env.PUBKEY2 }}
+
       - name: run rvm
         shell: bash {0}
         if: true # each step need rvm.sh sourcing?
