@@ -54,9 +54,10 @@ jobs:
           repository: ${{ env.REPO_MY_VIM }}
 
       - name: Uninstall snap
-        if: false # remove_snap.sh is part of vim/vim
+        if: true # remove_snap.sh is part of vim/vim. use copied script.
         run: |
-          sudo bash ci/remove_snap.sh
+          sudo bash .github/workflows/ci_remove_snap.sh
+
 
       - name: Install packages
         run: |
