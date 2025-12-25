@@ -119,8 +119,10 @@ jobs:
           PUBKEY2: '7D2BAF1CF37B13E2069D6956105BD0E739499BDB'
         # rvm/ubuntu_rvm README.md
         # need rvmsudo ?
+        # both USER and Root fetch rvm pubkey
         run: |
           gpg --keyserver keyserver.ubuntu.com --recv-keys ${{ env.PUBKEY1 }} ${{ env.PUBKEY2 }}
+          sudo gpg --keyserver keyserver.ubuntu.com --recv-keys ${{ env.PUBKEY1 }} ${{ env.PUBKEY2 }}
 
       - name: run rvm
         shell: bash {0}
