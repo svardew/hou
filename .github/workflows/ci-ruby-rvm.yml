@@ -133,7 +133,7 @@ jobs:
           rvm version
           rvmsudo rvm get master
           rvm reload
-          rvmsudo rvm install --64 --binary ruby-4.0.0
+          rvmsudo rvm install --64 ruby-4.0.0
           rvm reload
           ruby -v
           rvm version
