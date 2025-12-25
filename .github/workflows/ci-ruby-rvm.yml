@@ -103,8 +103,17 @@ jobs:
           sudo add-apt-repository ppa:rael-gc/rvm
           sudo apt-get update && sudo apt-get upgrade -y --allow-downgrades && sudo apt-get install -y --allow-downgrades "${PKGS[@]}"
 
+      - name: setup rvm
+        shell: bash {0}
+        run: |
+          sudo usermod -a -G rvm $USER
+          echo 'source "/etc/profile.d/rvm.sh"' >> ~/.bashrc
+          . ~/.bashrc
+          rvm version
+
       - name: run rvm
         shell: bash {0}
+        if: false # this step need rvm functions works correctly
         run: |
           rvm master
           rvm get master
