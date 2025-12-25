@@ -108,7 +108,8 @@ jobs:
         run: |
           sudo usermod -a -G rvm $USER
           echo 'source "/etc/profile.d/rvm.sh"' >> ~/.bashrc
-          . ~/.bashrc
+          source /etc/profile.d/rvm.sh
+          wc -l etc/profile.d/rvm.sh
           rvm version
 
       - name: run rvm
