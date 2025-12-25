@@ -1,0 +1,165 @@
+name: GitHub CI with ruby via rvm
+
+on:
+  workflow_dispatch:
+
+# Cancels all previous workflow runs for pull requests that have not completed.
+concurrency:
+  # The concurrency group contains the workflow name and the branch name for
+  # pull requests or the commit hash for any other events.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  linux:
+    runs-on: ${{ matrix.architecture == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+
+    env:
+      CC: ${{ matrix.compiler }}
+      GCC_VER: 14
+      CLANG_VER: 21
+      TEST: test
+      SRCDIR: ./src
+      LEAK_CFLAGS: -DEXITFREE
+      LOG_DIR: ${{ github.workspace }}/logs
+      TERM: xterm
+      DISPLAY: ':99'
+      DEBIAN_FRONTEND: noninteractive
+      #--
+      REPO_MY_VIM: ${{ github.repository_owner }}/vim
+
+    strategy:
+      fail-fast: false
+      matrix:
+        features: [tiny, normal, huge]
+        compiler: [clang, gcc]
+        extra: [[]]
+        # Only use non-native architecture when features != huge.
+        # features=huge tries to install python3-dev, which fails to install
+        # for the non-native architecture.
+        architecture: [native]
+        include:
+          - features: huge
+            compiler: gcc
+            extra: []
+
+    steps:
+      - name: Checkout repository from github
+        uses: actions/checkout@v6
+        if: false
+        with:
+          repository: ${{ env.REPO_MY_VIM }}
+
+      - name: Uninstall snap
+        run: |
+          sudo bash ci/remove_snap.sh
+
+      - name: Install packages
+        run: |
+          # This is added by default, and it is often broken, but we don't need anything from it
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+          PKGS=( \
+            gettext \
+            libgtk2.0-dev:${{ matrix.architecture }} \
+            desktop-file-utils \
+            libtool-bin \
+            libncurses-dev:${{ matrix.architecture }} \
+            libxt-dev:${{ matrix.architecture }} \
+          )
+          if ${{ matrix.features == 'huge' }}; then
+            LUA_VER=${{ matrix.lua_ver || '5.4' }}
+            PKGS+=( \
+              autoconf \
+              gdb \
+              lcov \
+              libcanberra-dev \
+              libperl-dev \
+              python2-dev \
+              python3-dev \
+              liblua${LUA_VER}-dev \
+              lua${LUA_VER} \
+              ruby-dev \
+              tcl-dev \
+              cscope \
+              libsodium-dev \
+              attr \
+              libattr1-dev
+            )
+          fi
+          PKGS+=( \
+            software-properties-common \
+            rvm
+          )
+          sudo add-apt-repository ppa:rael-gc/rvm
+          sudo apt-get update && sudo apt-get upgrade -y --allow-downgrades && sudo apt-get install -y --allow-downgrades "${PKGS[@]}"
+
+      - name: run rvm
+        shell: bash {0}
+        run: |
+          rvm master
+          rvm get master
+          rvm reload
+          rvm install --64 --binary 4.0.0
+          rvm reload
+          ruby -v
+          rvm version
+          rvm list known
+          rvm list
+          update-alternatives --query ruby
+          exit
+
+      - name: check rubies
+        shell: bash {0}
+        run: |
+          which ruby
+          ruby -v
+          rvm version
+          rvm list known
+          rvm list
+          update-alternatives --query ruby
+          exit
+
+      # use update-alternatives
+      - name: setup-ruby 3.3.1
+        uses: ruby/setup-ruby
+        if: false
+        with:
+          ruby-version: 4.0.0
+
+      - name: update-alternatives ruby33
+        shell: bash {0}
+        if: false
+        run: |
+          echo '/** no ruby entry in update-alternatives.'
+          echo ' * upd-alt --install ruby'
+          echo ' */'
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo '#-- toolchain via setup-ruby'
+          which ruby >> $GITHUB_STEP_SUMMARY
+          ls -lah $(which ruby) >> $GITHUB_STEP_SUMMARY
+          echo '#-- ubunut-runner default'
+          ls -lah /usr/bin |grep ruby >> $GITHUB_STEP_SUMMARY
+          # expect
+          # : /opt/hostedtoolcache/Ruby/3.3.1/x64/bin/ruby
+          # : /usr/bin/ruby -> ruby3.0
+          sudo update-alternatives --install /usr/bin/ruby ruby /usr/bin/ruby3.0  30
+          sudo update-alternatives --install /usr/bin/ruby ruby $(which ruby)     70
+          sudo update-alternatives --set ruby $(which ruby)
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+
+
+
+
+
+
+
+
+
+
+
+
+
