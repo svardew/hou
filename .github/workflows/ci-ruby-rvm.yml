@@ -108,6 +108,7 @@ jobs:
         run: |
           sudo usermod -a -G rvm $USER
           echo 'source "/etc/profile.d/rvm.sh"' >> ~/.bashrc
+          echo 'export rvmsudo_secure_path=1' >> ~/.bashrc
           source /etc/profile.d/rvm.sh
           wc -l /etc/profile.d/rvm.sh
           rvm version
@@ -126,10 +127,11 @@ jobs:
         if: true # each step need rvm.sh sourcing?
         run: |
           source /etc/profile.d/rvm.sh
+          export rvmsudo_secure_path=1
           rvm version
           rvmsudo rvm get master
           rvm reload
-          rvmsudo rvm install --64 --binary 4.0.0
+          rvmsudo rvm install --64 --binary ruby-4.0.0
           rvm reload
           ruby -v
           rvm version
