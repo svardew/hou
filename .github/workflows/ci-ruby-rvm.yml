@@ -131,7 +131,7 @@ jobs:
 
       - name: check rubies
         shell: bash {0}
-        fi: false
+        if: false
         run: |
           which ruby
           ruby -v
