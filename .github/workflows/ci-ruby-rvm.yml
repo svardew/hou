@@ -134,12 +134,15 @@ jobs:
           rvmsudo rvm get master
           rvm reload
           rvmsudo rvm install --64 ruby-4.0.0
-          rvm reload
+          echo 'noop# rvm reload'
           ruby -v
-          rvm version
+          echo 'noop# rvm version'
           rvm list known
+          rvmsudo rvm alias create default ruby-4.0.0
           rvm list
-          update-alternatives --query ruby
+          echo 'noop# update-alternatives --query ruby'
+          ruby -v
+          echo 'expect# ruby-4.0.0 is default. rvm use (current) is which ruby?'
           exit
 
       - name: check rubies
