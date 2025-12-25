@@ -127,9 +127,9 @@ jobs:
         run: |
           source /etc/profile.d/rvm.sh
           rvm version
-          rvm get master
+          rvmsudo rvm get master
           rvm reload
-          rvm install --64 --binary 4.0.0
+          rvmsudo rvm install --64 --binary 4.0.0
           rvm reload
           ruby -v
           rvm version
