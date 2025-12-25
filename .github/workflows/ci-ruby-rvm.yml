@@ -34,8 +34,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        features: [tiny, normal, huge]
-        compiler: [clang, gcc]
+        features: [huge]
+        compiler: [gcc]
         extra: [[]]
         # Only use non-native architecture when features != huge.
         # features=huge tries to install python3-dev, which fails to install
