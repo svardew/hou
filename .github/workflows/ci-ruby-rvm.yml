@@ -109,14 +109,15 @@ jobs:
           sudo usermod -a -G rvm $USER
           echo 'source "/etc/profile.d/rvm.sh"' >> ~/.bashrc
           source /etc/profile.d/rvm.sh
-          wc -l etc/profile.d/rvm.sh
+          wc -l /etc/profile.d/rvm.sh
           rvm version
 
       - name: run rvm
         shell: bash {0}
-        if: false # this step need rvm functions works correctly
+        if: true # each step need rvm.sh sourcing?
         run: |
-          rvm master
+          source /etc/profile.d/rvm.sh
+          rvm version
           rvm get master
           rvm reload
           rvm install --64 --binary 4.0.0
@@ -130,6 +131,7 @@ jobs:
 
       - name: check rubies
         shell: bash {0}
+        fi: false
         run: |
           which ruby
           ruby -v
