@@ -58,13 +58,13 @@ jobs:
         shell: bash {0}
         run: |
           pushd /etc/apt/preferences.d/
-          touch nosnap.pref
-          echo 'Package: snapd' >> nosnap.pref
-          echo 'Pin: release a=*' >> nosnap.pref
-          echo 'Pin-Priority: -10' >> nosnap.pref
+          sudo touch nosnap.pref
+          sudo echo 'Package: snapd' >> nosnap.pref
+          sudo echo 'Pin: release a=*' >> nosnap.pref
+          sudo echo 'Pin-Priority: -10' >> nosnap.pref
           popd
-          snap remove --purge $(snap list | awk '!/^Name|^core/ {print $1}')
-          apt-get purge -y snapd
+          sudo snap remove --purge $(snap list | awk '!/^Name|^core/ {print $1}')
+          sudo apt-get purge -y snapd
 
       - name: Install packages
         run: |
